@@ -1,7 +1,7 @@
 #include <iostream>
 
 void print_subset(const char* items, size_t count, bool* signature){
-    int ctr = 0;
+    size_t ctr = 0;
     for (size_t i = 0; i < count; i++){
         if(signature[i])
             ctr++;

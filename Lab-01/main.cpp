@@ -1,10 +1,18 @@
 #include <iostream>
 
-void print_subset(const char* items, size_t count, bool* signature ){
+void print_subset(const char* items, size_t count, bool* signature){
+    int ctr = 0;
+    for (size_t i = 0; i < count; i++){
+        if(signature[i])
+            ctr++;
+    }
     std::cout << "{ ";
     for (size_t i = 0; i < count; i++){
         if(signature[i]){
-            std::cout << items[i] << " ";
+            std::cout << items[i];
+            if(i < ctr-1)
+                std::cout << ",";
+            std::cout << " ";
         }
     }
     std::cout << "}" <<std::endl;
@@ -30,6 +38,5 @@ void get_subsets(const char* items, size_t count){
 int main(int argc, char** argv){
     const char items[] = {'A','B','C','D'};
     const size_t count = sizeof(items) / sizeof(items[0]);
-    const size_t subset_count = 1 << count;
     get_subsets(items, count);
 }

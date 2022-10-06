@@ -1,6 +1,6 @@
 #include <iostream>
 
-int subset_count(bool* signature, size_t count){
+int subset_count(bool* signature, const size_t count){
     int ctr = 0;
     for (size_t i = 0; i < count; i++){
         if(!signature[i])
@@ -9,8 +9,11 @@ int subset_count(bool* signature, size_t count){
     return ctr;
 }
 
-void print_subset(const char* items, size_t count, bool* signature){
+void print_subset(const char* items, const size_t count, bool* signature, bool* shouldEnd){
     int ctr = subset_count(signature, count);
+    if(ctr == 0){
+        *shouldEnd = true;
+    }
     std::cout << "{ ";
     int temp = 0;
     for (size_t i = 0; i < count; i++){
@@ -24,22 +27,23 @@ void print_subset(const char* items, size_t count, bool* signature){
     std::cout << "}" <<std::endl;
 }
 
-void priv_get_subsets(const char* items, size_t count, bool* signature, size_t layer = 0){
-    if(++layer <= count){
-        print_subset(items, count, signature);
-        for (size_t i = count-1; i >= 0; i--){
-            if(!signature[i]){
-                signature[i] = true;
-                priv_get_subsets(items, count, signature, layer);
-            }
-            signature[i] = false;
+void priv_get_subsets(const char* items, const size_t count, bool* signature, bool* shouldEnd){
+    if(*shouldEnd)
+        return;
+    print_subset(items, count, signature, shouldEnd);
+    for (size_t i = count; i > 0; i--){
+        if(!signature[i-1]){
+            signature[i-1] = true;
+            priv_get_subsets(items, count, signature, shouldEnd);
         }
+        signature[i-1] = false;
     }
 }
 
-void get_subsets(const char* items, size_t count){
+void get_subsets(const char* items, const size_t count){
     bool* signature = new bool[count];
-    priv_get_subsets(items, count, signature); 
+    bool shouldEnd = false;
+    priv_get_subsets(items, count, signature, &shouldEnd); 
     delete[] signature;
 }
 

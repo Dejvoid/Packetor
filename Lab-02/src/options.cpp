@@ -49,7 +49,23 @@ bool process_int_option(const std::string &name, const std::string &value, std::
     try
     {
         int result = std::stoi(value, &p);
+        if (p > 0){
+            write_int_error(value);
+            return false;
+        }
         out_value = std::to_string(result);
+        if (name == "r" || name == "red"){
+            options.flag_r = true;
+            options.value_r = result;
+        }
+        if (name == "g" || name == "green"){
+            options.flag_g = true;
+            options.value_g = result;
+        }
+        if (name == "b" || name == "blue"){
+            options.flag_b = true;
+            options.value_g = result;
+        }
     }
     catch (...)
     {
@@ -66,7 +82,15 @@ bool process_float_option(const std::string &name, const std::string &value, std
     try
     {
         float result = std::stof(value, &p);
+        if (p > 0){
+            write_float_error(value);
+            return false;
+        }
         out_value = std::to_string(result);
+        if (name == "a" || name == "alpha"){
+            options.flag_a = true;
+            options.value_a = result;
+        }
     }
     catch (...)
     {
@@ -138,8 +162,7 @@ bool process_short_option(const std::string &s, size_t &i, args_t::const_iterato
                 case 'r':
                 case 'g':
                 case 'b':{
-                    if (s.size() - (i + 1) > 0)
-                    {
+                    if (s.size() - (i + 1) > 0){
                         bool temp_res = process_int_option(name, s.substr(i + 1, s.size()), out_value, options);
                         if (temp_res){
                             write_value_info(name, out_value);
@@ -147,9 +170,7 @@ bool process_short_option(const std::string &s, size_t &i, args_t::const_iterato
                         result &= temp_res;
                         i = s.size();
                     }
-                    else
-                    {
-
+                    else{
                         if (it + 1 != args.end())
                         {
                             const std::string &value = *++it;
@@ -235,7 +256,7 @@ bool process_arguments(const args_t &args, options_t &options)
 
 // Copying bool (1B) instead of address
 void print_flag(const std::string &name, const bool value){
-    std::cout << "Flag option <" << name << "> is <" << (value ? "enabled" : "disabled") << std::endl;
+    std::cout << "Flag option <" << name << "> is <" << (value ? "enabled" : "disabled") << ">" << std::endl;
 }
 
 void print_flags(const options_t &options){

@@ -46,19 +46,20 @@ void write_float_error(const std::string &value)
     std::cout << "Value <" << value << "> is not a valid floating point number!" << std::endl;
 }
 
-bool process_int_option(const std::string &name, const std::string &value, std::string &out_value, options_t &options)
+bool process_int_option(const std::string &name, const std::string &value, options_t &options)
 {
     size_t p; // returns index after matched
     try
     {
         int result = std::stoi(value, &p);
+        write_value_info(name, value);
         if (p - value.length() > 0)
         {
             write_int_error(value);
             options.flag_r = false;
             return false;
         }
-        out_value = std::to_string(result);
+        
         if (name == "r" || name == "red")
         {
             options.flag_r = true;
@@ -84,20 +85,19 @@ bool process_int_option(const std::string &name, const std::string &value, std::
     return true;
 }
 
-bool process_float_option(const std::string &name, const std::string &value, std::string &out_value, options_t &options)
+bool process_float_option(const std::string &name, const std::string &value, options_t &options)
 {
     size_t p;
     try
     {
         float result = std::stof(value, &p);
+        write_value_info(name, value);
         if (p - value.length() > 0)
         {
             write_float_error(value);
             options.flag_a = false;
             return false;
         }
-        
-        out_value = std::to_string(result);
         if (name == "a" || name == "alpha")
         {
             options.flag_a = true;
@@ -125,36 +125,26 @@ bool process_long_option(const std::string &name, const args_t &args, args_t::co
     }
     else if (name == "red" || name == "green" || name == "blue")
     {
-        std::string out_value;
         if (it + 1 != args.end())
         {
             const std::string &value = *++it;
-            bool temp_res = process_int_option(name, value, out_value, options);
-            if(temp_res){
-                write_value_info(name, out_value);
-            }
-            result &= temp_res;
+            result &= process_int_option(name, value, options);
         }
         else
         {
-            result &= process_int_option(name, "", out_value, options);
+            result &= process_int_option(name, "", options);
         }
     }
     else if (name == "alpha")
     {
-        std::string out_value;
         if (it + 1 != args.end())
         {
             const std::string &value = *(++it);
-            bool temp_res = process_float_option(name, value, out_value, options);
-            if(temp_res){
-                write_value_info(name, out_value);
-            }
-            result &= temp_res;
+            result &= process_float_option(name, value, options);
         }
         else
         {
-            result &= process_float_option(name, "", out_value, options);
+            result &= process_float_option(name, "", options);
         }
     }
     else
@@ -167,7 +157,6 @@ bool process_long_option(const std::string &name, const args_t &args, args_t::co
 bool process_short_option(const std::string &s, size_t &i, args_t::const_iterator &it, const args_t &args, options_t &options)
 {
     bool result = true;
-    std::string out_value;
     std::string name = std::string(1, s[i]);
     switch (s[i])
     {
@@ -186,12 +175,7 @@ bool process_short_option(const std::string &s, size_t &i, args_t::const_iterato
     {
         if (s.size() - (i + 1) > 0)
         {
-            bool temp_res = process_int_option(name, s.substr(i + 1, s.size()), out_value, options);
-            if (temp_res)
-            {
-                write_value_info(name, out_value);
-            }
-            result &= temp_res;
+            result &= process_int_option(name, s.substr(i + 1, s.size()), options);
             i = s.size();
         }
         else
@@ -199,21 +183,11 @@ bool process_short_option(const std::string &s, size_t &i, args_t::const_iterato
             if (it + 1 != args.end())
             {
                 const std::string &value = *++it;
-                bool temp_res = process_int_option(name, value, out_value, options);
-                if (temp_res)
-                {
-                    write_value_info(name, out_value);
-                }
-                result &= temp_res;
+                result &= process_int_option(name, value, options);
             }
             else
             {
-                bool temp_res = process_int_option(name, "", out_value, options);
-                if (temp_res)
-                {
-                    write_value_info(name, out_value);
-                }
-                result &= temp_res;
+                result &= process_int_option(name, "", options);
             }
             
         }
@@ -223,12 +197,7 @@ bool process_short_option(const std::string &s, size_t &i, args_t::const_iterato
     {
         if (s.size() - (i + 1) > 0)
         {
-            bool temp_res = process_float_option(name, s.substr(i + 1, s.size()), out_value, options);
-            if (temp_res)
-            {
-                write_value_info(name, out_value);
-            }
-            result &= temp_res;
+            result &= process_float_option(name, s.substr(i + 1, s.size()), options);
             i = s.size();
         }
         else
@@ -236,21 +205,11 @@ bool process_short_option(const std::string &s, size_t &i, args_t::const_iterato
             if (it + 1 != args.end())
             {
                 const std::string &value = *++it;
-                bool temp_res = process_float_option(name, value, out_value, options);
-                if (temp_res)
-                {
-                    write_value_info(name, out_value);
-                }
-                result &= temp_res;
+                result &= process_float_option(name, value, options);
             }
             else
             {
-                bool temp_res = process_float_option(name, "", out_value, options);
-                if (temp_res)
-                {
-                    write_value_info(name, out_value);
-                }
-                result &= temp_res;
+                result &= process_float_option(name, "", options);
             }
         }
     }

@@ -6,12 +6,24 @@
 
 using args_t = std::vector<std::string>;
 
-bool process_value_option(const std::string& name, const std::string& value);
+struct options_t {
+    bool flag_x = false;
+    bool flag_y = false;
+    bool flag_gs = false;
+    bool flag_t = false;
+    bool flag_r = false;
+    int value_r;
+    bool flag_g = false;
+    int value_g;
+    bool flag_b = false;
+    int value_b;
+    bool flag_a = false;
+    float value_a;
+    std::vector<std::string> values; 
+};
 
-bool process_flag_option(const std::string& name);
+bool process_arguments(const args_t &args, options_t &options);
 
-bool process_standalone_value(const std::string& value);
-
-bool process_arguments(const args_t& args);
+void print_options(const options_t &options);
 
 #endif

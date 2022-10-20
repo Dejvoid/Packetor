@@ -23,3 +23,6 @@ clean:
 
 run: $(OUT)
 	./$(OUT)
+
+
+#g++ include/options.hpp src/options.cpp src/main.cpp -Iinclude

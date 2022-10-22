@@ -5,13 +5,13 @@
 int main(int argc, char **argv)
 {
     bool result = true;
-    const char* path = "data/data.txt";
+    std::string path = "data/data.txt";
     
     std::string line;
-    statistics stats;
+    Statistics stats;
 
-    result &= counter::process(path, &stats);
-    result &= counter::print("output.txt", &stats);
+    result &= Counter::process(path, &stats);
+    result &= Counter::print("output.txt", &stats);
     return 0;
 }
 

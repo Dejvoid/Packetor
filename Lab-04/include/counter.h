@@ -20,10 +20,10 @@ class Statistics{
 
 class Counter{
     private:
-        static bool check_decimal(const std::string &line, Statistics *stats, size_t & index, std::string &number_str);
+        static bool is_float(const std::string &line, Statistics *stats, size_t & index, std::string &number_str);
         static void process_number(const std::string &line, Statistics *stats, size_t &index);
         static void process_word(const std::string &line, Statistics *stats, size_t &index);
-        static bool process_line(const std::string &line, Statistics *stats);
+        static bool process_line(const std::string &line, Statistics *stats, bool &in_sentence);
     public:
         static bool process(const std::string& filename, Statistics *stats);
         static bool process(std::istream& is, Statistics *stats);

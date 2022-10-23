@@ -1,5 +1,5 @@
 
-#include "counter.h"
+#include "Counter.h"
 
 
 int main(int argc, char **argv)

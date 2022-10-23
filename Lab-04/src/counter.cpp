@@ -1,4 +1,4 @@
-#include "counter.h"
+#include "Counter.h"
 #include <fstream>
 
 bool Counter::process(const std::string& filename, Statistics *stats){    // otevre ifstream, zavola jinou, ktera zpracuje obecny istream

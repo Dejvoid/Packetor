@@ -1,12 +1,12 @@
-#include "Movie.hpp"
+#include "Movie.h"
 
 using namespace std;
 
-Movie::Movie(const string &name, unsigned short year, const string &genre, unsigned short ranking, const set<string> &actors) 
-    : name_(name), year_(year), genre_(genre), ranking_(ranking), actors_(actors) {}
+Movie::Movie(const string &name, unsigned short year, const string &genre, unsigned short rating, const set<string> &actors) 
+    : name_(name), year_(year), genre_(genre), rating_(rating), actors_(actors) {}
 
-Movie::Movie(string &&name, unsigned short year, string &&genre, unsigned short ranking, set<string> &&actors) 
-    : name_(name), year_(year), genre_(genre), ranking_(ranking), actors_(actors) {}
+Movie::Movie(string &&name, unsigned short year, string &&genre, unsigned short rating, set<string> &&actors) 
+    : name_(name), year_(year), genre_(genre), rating_(rating), actors_(actors) {}
 
 void Movie::print_json(ostream &os) const
 {
@@ -14,7 +14,7 @@ void Movie::print_json(ostream &os) const
     os << "name: \"" << name_ << "\", ";
     os << "year: " << year_ << ", ";
     os << "genre: \"" << genre_ << "\", ";
-    os << "rating: " << ranking_;
+    os << "rating: " << rating_;
     if (actors_.size() > 0){
         os << ", actors: [ ";
         for (auto it = actors_.begin(); it != actors_.end(); ++it){

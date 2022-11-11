@@ -1,7 +1,9 @@
 #include <vector>
-#include "Movie.hpp"
+#include "Movie.h"
+#include "Database.h"
 
 int main(int argc, char **argv){
+    /*
     std::set<std::string> a1;
     a1.insert("Pepa");
     std::set<std::string> a2 = {"Pepa", "Honza", "Franta"};
@@ -19,4 +21,11 @@ int main(int argc, char **argv){
         i.print_json();
     }
     return 0; // istringstream, getline
+    */
+   std::vector<Movie> db;
+   Database::import("example.txt", db);
+   db_query_1(db);
+   std::cout<< std::endl;
+   db_query_2(db);
+   
 }

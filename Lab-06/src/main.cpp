@@ -11,7 +11,6 @@ int main(int argc, char **argv){
     );
     e1.print_infix();
     e1.print_postfix();
+    std:: cout<< e1.evaluate() << std::endl;
     return 0;
 }
-// +-*/() prirozena cisla + 0
-// stromova struktura vyrazu

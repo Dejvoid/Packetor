@@ -6,8 +6,17 @@ Node::~Node(){}
 NumberNode::NumberNode(int value){
     value_ = value;
 }
+
 Type NumberNode::get_type() const{
     return Type::NUMBER;
+}
+
+void NumberNode::print_node_infix(std::ostream& os) const {
+    os << value_;
+}
+
+void NumberNode::print_node_postfix(std::ostream& os) const {
+    os << value_ << " ";
 }
 
 // Operation Node
@@ -29,6 +38,18 @@ OperationNode::~OperationNode(){
 
 Type OperationNode::get_type() const{
     return Type::OPERATION;
+}
+
+void OperationNode::print_node_infix(std::ostream& os) const { // TODO: ADD PRIORITIES AND ZAVORKY :-)
+    left_->print_node_infix(os);
+    os << " " <<get_operator() << " ";
+    right_->print_node_infix(os);
+}
+
+void OperationNode::print_node_postfix(std::ostream& os) const {
+    left_->print_node_postfix(os);
+    right_->print_node_postfix(os);
+    os << get_operator() << " ";
 }
 
 char AdditionNode::get_operator() const {
@@ -56,4 +77,14 @@ Expression::~Expression(){
         delete root_;
         root_ = nullptr;
     }
+}
+
+void Expression::print_postfix(std::ostream& os) const {
+    root_->print_node_postfix(os);
+    os << std::endl;
+}
+
+void Expression::print_infix(std::ostream& os) const {
+    root_->print_node_infix(os);
+    os << std::endl;
 }

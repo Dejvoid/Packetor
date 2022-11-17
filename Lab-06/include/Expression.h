@@ -14,6 +14,8 @@ constexpr char DIV_OPERATOR = '/';
 
 class Node { 
     public:
+        virtual void print_node_infix(std::ostream& os) const = 0;
+        virtual void print_node_postfix(std::ostream& os) const = 0;
         virtual Type get_type() const = 0;
         virtual ~Node();
 };
@@ -24,6 +26,8 @@ class NumberNode final : public Node {
     public: 
         NumberNode(int value);
         Type get_type() const override;
+        void print_node_infix(std::ostream& os) const override;
+        void print_node_postfix(std::ostream& os) const override;
 };
 
 class OperationNode : public Node {
@@ -35,6 +39,8 @@ class OperationNode : public Node {
         OperationNode(Node* left, Node* right);
         ~OperationNode();
         Type get_type() const override;
+        void print_node_infix(std::ostream& os) const override;
+        void print_node_postfix(std::ostream& os) const override;
 };
 
 class AdditionNode final : public OperationNode {
@@ -68,6 +74,7 @@ class Expression{
         Expression(Node* root);
         ~Expression();
         void print_postfix(std::ostream& os = std::cout) const;
+        void print_infix(std::ostream& os = std::cout) const;
 };
 
 #endif

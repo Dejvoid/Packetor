@@ -9,7 +9,8 @@ int main(int argc, char **argv){
             new NumberNode(4)
         )
     );
-
+    e1.print_infix();
+    e1.print_postfix();
     return 0;
 }
 // +-*/() prirozena cisla + 0

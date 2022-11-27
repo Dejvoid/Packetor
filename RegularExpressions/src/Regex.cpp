@@ -5,15 +5,18 @@ Regex::Regex(const std::string& expr){
     root_ = Parser::parse_from_str(expr);
 };
 
-void Regex::init_neighbor_method(){
+bool Regex::init_neighbor_method(){
+    if (root_ == nullptr)
+        return false;
     root_->add_starting(starting_);
     root_->add_neighbors(neighbors_);
     root_->add_ending(ending_);
     epsilon_ = root_->epsilon();
+    return true;
 };
 
 void Regex::print_ending(std::ostream& os){
-    os << "Ending: ";
+    os << "- Ending: ";
     os << "{";
     for (auto it = ending_.begin(); it != ending_.end(); ++it){
         LiteralNode* literal = *it;
@@ -25,7 +28,7 @@ void Regex::print_ending(std::ostream& os){
 };
 
 void Regex::print_starting(std::ostream& os){
-    os << "Starting: ";
+    os << "- Starting: ";
     os << "{";
     for (auto it = starting_.begin(); it != starting_.end(); ++it){
         LiteralNode* literal = *it;
@@ -37,7 +40,7 @@ void Regex::print_starting(std::ostream& os){
 };
 
 void Regex::print_neighbors(std::ostream& os){
-    os << "Neighbors: ";
+    os << "- Neighbors: ";
     os << "{";
     for (auto it = neighbors_.begin(); it != neighbors_.end(); ++it){
         auto pair = *it;
@@ -49,7 +52,7 @@ void Regex::print_neighbors(std::ostream& os){
 };
 
 void Regex::print_epsilon(std::ostream& os){
-    os << "Epsilon: ";
+    os << "- Epsilon: ";
     
     if (epsilon_)
         os << "true";

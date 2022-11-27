@@ -59,7 +59,18 @@ Node* Parser::parse_from_str(const std::string& expr){
     std::stack<char> operators;
     bool implicit_concat = false;
     for(auto it = expr.begin(); it != expr.end(); ++it){
-        if (is_literal(*it)){
+        if (*it =='\\'){
+            if (expr.substr(std::distance(expr.begin(),it), EPSILON_LEN) == EPSILON){
+                it += EPSILON_LEN-1;
+                operands.push(new EpsilonNode());
+            }
+            else if (expr.substr(std::distance(expr.begin(),it), EMPTY_SET_LEN) == EMPTY_SET){
+                it += EMPTY_SET_LEN-1;
+                operands.push(new EmptySetNode());
+            }
+
+        }
+        else if (is_literal(*it)){
             operands.push(new LiteralNode((char)*it, ++index));
             if (implicit_concat){
                 operators.push(CONCAT_OP);
@@ -78,24 +89,33 @@ Node* Parser::parse_from_str(const std::string& expr){
                 char op = pop_operator(operators);
                 if (op == LEFT_PARENTHESIS)
                     break;
-                operands.push(process_binary_op(operands, op));
+                Node* n = process_binary_op(operands, op);
+                if (n == nullptr)
+                    return nullptr;
+                operands.push(n);
             }
             implicit_concat = true;
         }
         else if (is_unary_operator(*it)){
-            operands.push(process_unary_op(operands, *it));
+            Node* n = process_unary_op(operands, *it);
+            if (n == nullptr)
+                return nullptr;
+            operands.push(n);
             implicit_concat = true;
         }
         else if (is_binary_operator(*it)){
             while (!operators.empty() && is_lower_equal_precedence(*it, operators.top())){
                 char op = pop_operator(operators);
-                operands.push(process_binary_op(operands, op));
+                Node* n = process_binary_op(operands, op);
+                if (n == nullptr)
+                    return nullptr;
+                operands.push(n);
             }
             operators.push(*it);
             implicit_concat = false;
         }
-        else{ // is constant
-
+        else{
+            // ERROR
         }
     }
     
@@ -103,6 +123,7 @@ Node* Parser::parse_from_str(const std::string& expr){
         char op = pop_operator(operators);
         operands.push(process_binary_op(operands, op));
     }
-    
+    if (operands.size() != 1)
+        return nullptr;
     return pop_operand(operands);
 };

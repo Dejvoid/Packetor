@@ -3,6 +3,7 @@
 
 #include <set>
 #include <string>
+#include <iostream>
 #include "Node.h"
 
 class Regex {
@@ -10,7 +11,7 @@ class Regex {
         Node* root_;
         std::set<LiteralNode*> starting_;
         std::set<LiteralNode*> ending_;
-        std::set<LiteralNode*> neighbors_;
+        std::set<Neighbor*> neighbors_;
         bool epsilon_;
         void get_neighbors();
         void get_ending();

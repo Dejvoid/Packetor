@@ -6,42 +6,56 @@ Regex::Regex(const std::string& expr){
 };
 
 void Regex::init_neighbor_method(){
+    root_->add_starting(starting_);
     root_->add_neighbors(neighbors_);
+    root_->add_ending(ending_);
+    epsilon_ = root_->epsilon();
 };
 
 void Regex::print_ending(std::ostream& os){
     os << "Ending: ";
     os << "{";
     for (auto it = ending_.begin(); it != ending_.end(); ++it){
-        LiteralNode& literal = *it;
+        LiteralNode* literal = *it;
         if (it != ending_.begin())
             os << ", ";
-        os << literal.value() << ":" << literal.index();
+        os << literal->value() << ":" << literal->index();
     }
-    os << "}";
+    os << "}" << std::endl;
 };
 
 void Regex::print_starting(std::ostream& os){
     os << "Starting: ";
     os << "{";
     for (auto it = starting_.begin(); it != starting_.end(); ++it){
-        LiteralNode& literal = *it;
+        LiteralNode* literal = *it;
         if (it != starting_.begin())
             os << ", ";
-        os << literal.value() << ":" << literal.index();
+        os << literal->value() << ":" << literal->index();
     }
-    os << "}";
+    os << "}" << std::endl;
 };
 
 void Regex::print_neighbors(std::ostream& os){
     os << "Neighbors: ";
     os << "{";
-    
-    os << "}";
+    for (auto it = neighbors_.begin(); it != neighbors_.end(); ++it){
+        auto pair = *it;
+        if (it != neighbors_.begin())
+            os << ", ";
+        os << "(" << pair->left->value() << ":" << pair->left->index() << ", " << pair->right->value() << ":" << pair->right->index() << ")";
+    }
+    os << "}" << std::endl;
 };
 
 void Regex::print_epsilon(std::ostream& os){
-    os << "Epsilon: " << epsilon_ ? "true" : "false";
+    os << "Epsilon: ";
+    
+    if (epsilon_)
+        os << "true";
+    else
+        os <<"false";
+    os  << std::endl;
 }
 
 void Regex::print_info(std::ostream& os){
@@ -49,4 +63,5 @@ void Regex::print_info(std::ostream& os){
     print_neighbors(os);
     print_ending(os);
     print_epsilon(os);
+    os << std::endl;
 };

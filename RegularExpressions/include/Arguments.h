@@ -13,9 +13,9 @@ static inline bool is_switch(const std::string& arg){
     return arg[0] == SWITCH_CHAR;
 }
 
-std::vector<Regex> expressions_from_args(const args_t& args){
+std::vector<std::string> expressions_from_args(const args_t& args){
     bool from_file = false;
-    std::vector<Regex> ret;
+    std::vector<std::string> ret;
     for (auto it = args.begin(); it != args.end(); ++it){
         if (is_switch((*it))){
             const std::string& option = *it;
@@ -39,13 +39,13 @@ std::vector<Regex> expressions_from_args(const args_t& args){
                 if (fs.good()){
                     for (std::string line; std::getline(fs, line);){
                         if (line.length() != 0){
-                            ret.push_back(Regex(line));
+                            ret.push_back(line);
                         }
                     }
                 }
             }
             else {
-                ret.push_back(Regex(*it));
+                ret.push_back(*it);
             }
         }
     }

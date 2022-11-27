@@ -2,6 +2,7 @@
 #define NODE_H_
 
 #include "Constants.h"
+#include <set>
 
 enum class NodeType{
     UNARY_OPERATOR,
@@ -13,6 +14,7 @@ class Node{
     public:
         virtual ~Node();
         inline virtual NodeType get_type() const = 0;
+        virtual void add_neighbors(std::set<int>& parent_n)=0;
 };
 
 class LiteralNode final : public Node{
@@ -22,7 +24,9 @@ class LiteralNode final : public Node{
     public:
         LiteralNode(char value, int index);
         inline NodeType get_type() const override { return NodeType::LITERAL; };
+        inline char value() const {return value_;};
         inline int index() const {return index_;};
+        void add_neighbors(std::set<int>& parent_n) override;
 };
 class BinaryOperatorNode : public Node{
     private:

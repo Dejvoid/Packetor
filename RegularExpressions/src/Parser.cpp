@@ -50,37 +50,55 @@ Node* Parser::process_unary_op(std::stack<Node*>& operands, char op){
 
 bool Parser::is_lower_equal_precedence(char l, char r){
     return l == r || 
-    (l == ALTER_OP);
+    (l == ALTER_OP && (r == ALTER_OP || r == CONCAT_OP));
 }
 
 Node* Parser::parse_from_str(const std::string& expr){
     int index = 0;
     std::stack<Node*> operands;
     std::stack<char> operators;
+    bool implicit_concat = false;
     for(auto it = expr.begin(); it != expr.end(); ++it){
         if (is_literal(*it)){
+            printf("found literal\n");
             operands.push(new LiteralNode((char)*it, ++index));
+            if (implicit_concat){
+                operators.push(CONCAT_OP);
+                printf(" concat ");
+            }
+            implicit_concat = true;
         }
         else if (*it == LEFT_PARENTHESIS){
+            printf("found left parenthesis\n");
+            if (implicit_concat){
+                operators.push(CONCAT_OP);
+            }
             operators.push(*it);
+            implicit_concat = false;
         }
         else if (*it == RIGHT_PARENTHESIS){
+            printf("found right parenthesis\n");
             while(!operators.empty()){
                 char op = pop_operator(operators);
                 if (op == LEFT_PARENTHESIS)
                     break;
                 operands.push(process_binary_op(operands, op));
             }
+            implicit_concat = true;
         }
         else if (is_unary_operator(*it)){
+            printf("found unary operator\n");
             operands.push(process_unary_op(operands, *it));
+            implicit_concat = true;
         }
         else if (is_binary_operator(*it)){
+            printf("Found binary operator\n");
             while (!operators.empty() && is_lower_equal_precedence(*it, operators.top())){
                 char op = pop_operator(operators);
                 operands.push(process_binary_op(operands, op));
             }
             operators.push(*it);
+            implicit_concat = false;
         }
         else{ // is constant
 

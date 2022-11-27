@@ -11,13 +11,18 @@ class Regex {
         std::set<LiteralNode*> starting_;
         std::set<LiteralNode*> ending_;
         std::set<LiteralNode*> neighbors_;
+        bool epsilon_;
+        void get_neighbors();
+        void get_ending();
+        void get_starting();
     public: 
         Regex(const std::string& expr);
-        std::string print_starting();
-        std::string print_ending();
-        std::string print_neighbors();
-        std::string print_info();
-        std::string print_epsilon();
+        void init_neighbor_method();
+        void print_starting(std::ostream& os = std::cout);
+        void print_ending(std::ostream& os = std::cout);
+        void print_neighbors(std::ostream& os = std::cout);
+        void print_epsilon(std::ostream& os = std::cout);
+        void print_info(std::ostream& os = std::cout);
 };
 
 #endif

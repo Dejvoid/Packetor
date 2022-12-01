@@ -4,8 +4,14 @@
 #include <string>
 #include <set>
 #include <iostream>
+#include "Actor.h"
 
 using namespace std;
+
+enum class Type 
+{
+    MOVIE, SERIES
+};
 
 class Title {
     private:
@@ -13,17 +19,21 @@ class Title {
         unsigned short year_;
         string genre_;
         unsigned short rating_;
-        set<string> actors_;
+        set<Actor> actors_;
+    protected:
+        virtual void print_json_body(ostream& os = std::cout) const;
     public: 
         const string & name() const;
         const unsigned short year() const;
         const string & genre() const;
         const unsigned short rating() const;
-        const set<string> & actors() const;
+        const set<Actor> & actors() const;
         Title() = default;
-        Title(const string & name, unsigned short year, const string & genre, unsigned short ranking, const set<string> & actors);
-        Title(string && name, unsigned short year, string && genre, unsigned short ranking, set<string> && actors);
-        void print_json(ostream & os = std::cout) const;
+        Title(const string & name, unsigned short year, const string & genre, unsigned short ranking, const set<Actor> & actors);
+        Title(string && name, unsigned short year, string && genre, unsigned short ranking, set<Actor> && actors);
+        virtual ~Title() = default;
+        virtual void print_json(ostream & os = std::cout) const = 0;
+        virtual Type type() const = 0;
 };
 
 inline const string & Title::name() const {
@@ -38,7 +48,7 @@ inline const string & Title::genre() const {
 inline const unsigned short Title::rating() const {
     return rating_;
 }
-inline const set<string> & Title::actors() const {
+inline const set<Actor> & Title::actors() const {
     return actors_;
 }
 

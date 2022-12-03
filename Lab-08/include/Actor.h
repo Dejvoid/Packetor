@@ -25,8 +25,6 @@ public:
 
 bool operator<(const Actor& actor1, const Actor& actor2);
 
-bool operator==(const Actor& a1, const Actor& a2);
-
 std::ostream& operator<<(std::ostream& os, const Actor& actor);
 
 std::istream& operator>>(std::istream& is, Actor& actor);

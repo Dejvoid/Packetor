@@ -11,10 +11,6 @@ std::ostream& operator<<(std::ostream& os, const Actor& actor){
     return os;
 }
 
-bool operator==(const Actor& a1, const Actor& a2){
-    return a1.last_name() == a2.last_name() && a1.first_name() == a2.first_name();
-}
-
 std::istream& operator>>(std::istream& is, Actor& actor){
     std::string temp;
     is >> actor.first_name_ >> actor.last_name_ >> temp;

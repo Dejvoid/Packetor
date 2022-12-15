@@ -85,11 +85,13 @@ bool Database::import(std::istream& is, std::vector<std::shared_ptr<Title>>& db)
     bool ret_value = true;
     for (std::string line; std::getline(is, line);){ // read all entries
         std::shared_ptr<Title> m;
-        if (process_csv_line(line, m))
-            //db.emplace_back(std::move(m));
-            db.emplace_back(m);
-        else 
-            ret_value &= false;
+        if (line.size() != 0){
+            if (process_csv_line(line, m))
+                //db.emplace_back(std::move(m));
+                db.emplace_back(m);
+            else 
+                ret_value &= false;
+        }
     }
     return ret_value;
 };
@@ -111,22 +113,20 @@ bool Database::import(const std::string& filename, std::vector<std::shared_ptr<T
 bool filter(const shared_ptr<Title> m){
     std::string desired_genre = "comedy";
     unsigned short desired_year = 2010;
-    std::string desired_actor1 = "Ivan Trojan";
-    std::string desired_actor2 = "Tereza Voriskova";
+    std::string desired_first_name1 = "Ivan";
+    std::string desired_last_name1 = "Trojan";
+    
+    std::string desired_first_name2 = "Tereza";
+    std::string desired_last_name2 = "Voriskova";
     bool ret_value = true;
     ret_value &= m->genre() == desired_genre;
     ret_value &= m->year() < desired_year;
-    //ret_value &= m.actors().contains("Ivan Trojan") || m.actors().contains("Tereza Voriskova"); - exists in c++20
-    bool found = false;
-    for (auto &&act : m->actors())
-    {
-        found |= act.first_name() == "Ivan" && act.last_name() == "Trojan";
-        found |= act.first_name() == "Tereza" && act.last_name() == "Voriskova";
-
+    bool contains_actor = false;
+    for (auto &&actor : m->actors()){
+        contains_actor |= (actor.first_name() == desired_first_name1 && actor.last_name() == desired_last_name1)  ||
+                        (actor.first_name() == desired_first_name2 && actor.last_name() == desired_last_name2);
     }
-    ret_value &= found;
-    //ret_value &= m->actors().find(Actor("Ivan", "Trojan", 0)) != m->actors().end() 
-    //    || m->actors().find(Actor("Tereza", "Voriskova", 0)) != m->actors().end();
+    ret_value &= contains_actor;
     return ret_value;
 };
 
@@ -140,6 +140,20 @@ bool FilterPredicate::operator()(const shared_ptr<Title>& title_ptr){
         res |= act == actor_;
     }
     return !res;
+};
+
+CountIfPredicate::CountIfPredicate(Type type, const string genre) {
+    type_ = type;
+    genre_ = genre;
+    counter_ = 0;
+    rating_sum_ = 0;
+};
+
+void CountIfPredicate::operator()(const shared_ptr<Title>& title_ptr) {
+    if (title_ptr->type() == type_ && title_ptr->genre() == genre_){
+        ++counter_;
+        rating_sum_ += title_ptr->rating();
+    }
 };
 
 void db_query_1(const vector<shared_ptr<Title>>& db){
@@ -167,26 +181,29 @@ void db_query_3(const vector<shared_ptr<Title>>& db, unsigned short seasons, uns
 
 void db_query_4(const vector<shared_ptr<Title>>& db, const type_info& type, unsigned short begin, unsigned short end){
     for(auto it = db.begin(); it != db.end(); ++it){
-        if (type == typeid(*it) && (*it)->year() >= begin && (*it)->year() < end)
-            std::cout << (*it)->name();
+        if (type == typeid(**it) && (*it)->year() >= begin && (*it)->year() < end)
+            std::cout << (*it)->name() << std::endl;
     }
 };
 
 void db_query_5(const map<string, shared_ptr<Title>>& index, const string& name){
     auto temp = index.find(name);
-    if (temp != index.end())
+    if (temp != index.end()) {
+        cout << "\"" << name << "\"" << " -> ";
         temp->second->print_json();
+    }
     else 
-        std::cout << "\"name\" -> Not found!" << std::endl;
+        std::cout << "\"" << name << "\" -> Not found!" << std::endl;
 };
 
 void db_query_6(const multimap<unsigned short, shared_ptr<Title>>& index, unsigned short year){
     auto range = index.equal_range(year);
+    
     if (range.first == range.second)
-        std::cout << "year -> Not found!" << std::endl;
+        std::cout << year <<" -> Not found!" << std::endl;
     else
         for (auto it = range.first; it != range.second; ++it){
-            cout << "year -> " << it->second->name() << endl;
+            cout << year << " -> \"" << it->second->name() << "\"" << endl;
         }
     
 };
@@ -196,10 +213,10 @@ void db_query_7 (const multimap<unsigned short, shared_ptr<Title>>& index, unsig
     auto to = index.lower_bound(end);
     if (from != to)
         for (auto it = from; it != to; ++it){
-            cout << "year -> " << it->second->name() << endl;
+            cout << it->second->year() << " -> \"" << it->second->name() << "\"" << endl;
         }
     else 
-        std::cout << "year -> Not found!" << std::endl;
+        std::cout << "[" << begin << ", " << end << ")" << " -> Not found!" << std::endl;
     
 };
 
@@ -221,15 +238,33 @@ void db_query_9(const vector<shared_ptr<Title>>& db, vector<shared_ptr<Title>>& 
     sort(result.begin(), result.end(), Comparator());
 };
 
-void db_query_10(const std::vector<std::shared_ptr<Title>>& db, std::vector<std::shared_ptr<Title>>& result, const std::string& genre){
-    result.resize(db.size());
-    auto end = copy_if(db.begin(), db.end(), result, [genre](shared_ptr<Title>& t){ return t->genre() == genre; });
-    sort(result.begin(), end, [](shared_ptr<Title>& p1, shared_ptr<Title>& p2){ return p1->name() > p2->name(); });
+void db_query_10(const vector<shared_ptr<Title>>& db, vector<shared_ptr<Title>>& result, const string& genre){
+    size_t desired_size = count_if(db.begin(), db.end(), [genre](const shared_ptr<Title>& t) { return t->genre() == genre; });
+    result.resize(desired_size);
+    auto end = copy_if(db.begin(), db.end(), result.begin(), [genre](const shared_ptr<Title>& t) { return t->genre() == genre; });
+    sort(result.begin(), end, [](shared_ptr<Title>& p1, shared_ptr<Title>& p2) { return p1->name() < p2->name(); });
 };
 
-void db_index_titles(const std::vector<std::shared_ptr<Title>>& db, std::map<std::string, std::shared_ptr<Title>>& index){
-    for (auto &&title : db)
-    {
+void db_query_11(const vector<shared_ptr<Title>>& db, Type type, const string& genre, int& result){
+    result = 0;
+    CountIfPredicate cip(type, genre);
+    cip = for_each(db.begin(),db.end(), cip);
+    if (cip.counter() == 0)
+        result = 0;
+    else
+        result = cip.rating_sum() / cip.counter();
+};
+
+void db_query_12(const vector<shared_ptr<Title>>& db, const string& genre, int& result) {
+    result = 0;
+    for_each(db.begin(), db.end(), [genre, &result](const shared_ptr<Title>& t) { 
+        if (t->genre() == genre) 
+            ++(result);
+        });
+};  
+
+void db_index_titles(const vector<shared_ptr<Title>>& db, map<string, shared_ptr<Title>>& index){
+    for (auto &&title : db) {
         //pair<string, shared_ptr<Title>>
         //index.insert(pair<string, shared_ptr<Title>>())
         index.emplace(title->name(), title);
@@ -238,12 +273,15 @@ void db_index_titles(const std::vector<std::shared_ptr<Title>>& db, std::map<std
 
 
 void db_index_years(const vector<shared_ptr<Title>>& db, multimap<unsigned short, shared_ptr<Title>>& index){
-    for (auto &&title : db)
-    {
+    for (auto &&title : db) {
         index.emplace(title->year(), title);
     }  
 };
 
 void db_index_actors(const vector<shared_ptr<Title>>& db, unordered_multimap<Actor, shared_ptr<Title>>& index){
-
+    for (auto &&title : db) {
+        for (auto &&actor : title->actors()) {
+            index.emplace(actor, title);
+        }
+    }
 };

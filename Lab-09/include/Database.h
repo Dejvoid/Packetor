@@ -29,12 +29,25 @@ class FilterPredicate{
 };
 
 class Comparator{
-   public:
-    bool operator()(const shared_ptr<Title>& title_ptr_1, const shared_ptr<Title>& title_ptr_2){
-        // sestupne podle roku natoceni
-        return title_ptr_1->year() < title_ptr_2->year() || 
-        (title_ptr_1->year() == title_ptr_2->year() && title_ptr_1->name() > title_ptr_2->name());
-    } 
+    public:
+        bool operator()(const shared_ptr<Title>& title_ptr_1, const shared_ptr<Title>& title_ptr_2){
+            // sestupne podle roku natoceni
+            return title_ptr_1->year() > title_ptr_2->year() || 
+            (title_ptr_1->year() == title_ptr_2->year() && title_ptr_1->name() < title_ptr_2->name());
+        } 
+};
+
+class CountIfPredicate{
+    private: 
+        int rating_sum_;
+        int counter_;
+        Type type_;
+        string genre_;
+    public:
+        CountIfPredicate(Type type, const string genre);
+        void operator()(const shared_ptr<Title>& title_ptr);
+        inline int counter() { return counter_; }
+        inline int rating_sum() {return rating_sum_; }
 };
 
 void db_index_titles(const std::vector<std::shared_ptr<Title>>& db, std::map<std::string, std::shared_ptr<Title>>& index);
@@ -61,6 +74,10 @@ void db_query_8 (const unordered_multimap<Actor, shared_ptr<Title>>& index, cons
 
 void db_query_9(const vector<shared_ptr<Title>>& db, vector<shared_ptr<Title>>& result, const Actor& actor);
 
-void db_query_10(const std::vector<std::shared_ptr<Title>>& db, std::vector<std::shared_ptr<Title>>& result, const std::string& genre);
+void db_query_10(const vector<shared_ptr<Title>>& db, vector<shared_ptr<Title>>& result, const string& genre);
+
+void db_query_11(const vector<shared_ptr<Title>>& db, Type type, const string& genre, int& result);
+
+void db_query_12(const vector<shared_ptr<Title>>& db, const string& genre, int& result);
 
 #endif

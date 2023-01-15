@@ -63,7 +63,6 @@ class DirectedGraph : public Graph <NData, EData> {
     Type type() const override {return Type::DIRECTED; };
 };
 
-#pragma region GraphMethods
 template <typename NData, typename EData>
 Graph<NData, EData>::Graph(const Graph& other) {
     this->nodes_.~Nodes();
@@ -159,13 +158,13 @@ void Graph<NData, EData>::import(const std::string& filename) {
     import(ifs);
     ifs.close();
 };
-#pragma endregion
 
-#pragma region UndirectedGraph
 
-#pragma endregion
 
-#pragma region DirectedGraph
 
-#pragma endregion
+
+
+
+
+
 #endif

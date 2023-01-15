@@ -133,7 +133,7 @@ std::ostream& operator<<(std::ostream& os, const Edges<NData, const EData>& edge
     return os;
 };
 
-#pragma region EdgeMethods
+
 template <typename NData, typename EData>
 Edge<NData, EData>::Edge(size_t id, Node<NData>* source, Node<NData>* target, EData data) {
     id_ = id;
@@ -161,9 +161,9 @@ template <typename NData, typename EData>
 Node<NData>& Edge<NData,EData>::getTarget() const {
     return (*target_);
 };
-#pragma endregion
 
-#pragma region EdgesMethods
+
+
 template <typename NData, typename EData>
 Edges<NData, EData>::Edges(const Edges& other) {
     //this->adjacency_matrix_ = other.adjacency_matrix_;
@@ -277,6 +277,5 @@ template<typename NData, typename EData>
 typename lib::Array<Edge<NData, EData>>::iterator Edges<NData,EData>::end() const {
     return edges_.end();
 };
-#pragma endregion
 
 #endif

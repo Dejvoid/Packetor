@@ -115,7 +115,7 @@ std::ostream& operator<<(std::ostream& os, const Nodes<NData, EData>& nodes) {
     return os;
 };
 
-#pragma region NodeMethods
+
 template <typename NData>
 Node<NData>::Node(size_t id, NData data) {
     id_ = id;
@@ -134,8 +134,8 @@ size_t Node<NData>::getId() const {
     return id_;
 };
 
-#pragma endregion
-#pragma region NodesMethods
+
+
 
 template <typename NData, typename EData>
 Nodes<NData, EData>::Nodes(const Nodes& other) {
@@ -218,5 +218,6 @@ template <typename NData, typename EData>
 typename lib::Array<Node<NData>>::iterator Nodes<NData, EData>::end() const {
     return nodes_.end();
 };
-#pragma endregion
+
+
 #endif

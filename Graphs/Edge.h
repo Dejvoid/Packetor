@@ -1,3 +1,4 @@
+/// @file Edge.h
 #ifndef EDGE_H_
 #define EDGE_H_
 
@@ -9,7 +10,9 @@ template <typename NData, typename EData>
 class Edges;
 
 #include "Node.h"
-
+/// @brief 
+/// @tparam NData 
+/// @tparam EData 
 template <typename NData, typename EData>
 class Edge {
     private:
@@ -20,49 +23,110 @@ class Edge {
     public:
     //friend std::ostream& operator<<(std::ostream& os, const Edge<NData, EData>& edge);
     Edge() = default;
+    /// @brief 
+    /// @param id 
+    /// @param source 
+    /// @param target 
+    /// @param data 
     Edge(size_t id, Node<NData>* source, Node<NData>* target, EData data);
+    /// @brief 
+    /// @return 
     inline size_t getId() const;
+    /// @brief 
+    /// @return 
     inline EData& getData();
+    /// @brief 
+    /// @return 
     inline const EData& getData() const;
     inline Node<NData>& getSource() const;
     inline Node<NData>& getTarget() const;
 };
-
+/// @brief 
+/// @tparam NData 
+/// @tparam EData 
 template <typename NData, typename EData>
 class Edges {
     private:
     lib::Array<Edge<NData,EData>> edges_;
-    std::vector<std::vector<Edge<NData,EData>*>> adjacency_matrix_;
+    std::vector<std::vector<size_t>> adjacency_matrix_;
     friend Node<NData>& Nodes<NData, EData>::add(size_t id, NData data);
-    Edge<NData, EData>* get_from_matrix(size_t source, size_t target);
+    size_t get_from_matrix(size_t source, size_t target);
     Nodes<NData, EData>* nodes_;
     public:
     Edges() = default;
+    /// @brief 
+    /// @param nodes 
     Edges(Nodes<NData, EData>* nodes) : nodes_(nodes) {};
     Edges(const Edges& other);
     Edges(Edges&& other) noexcept;
     ~Edges() = default;
     Edges& operator=(const Edges& other);
     Edges& operator=(Edges&& other) noexcept;
+    /// @brief 
+    /// @param os 
     void print(std::ostream& os = std::cout) const;
+    /// @brief 
+    /// @param os 
     void printMatrix(std::ostream& os = std::cout) const;
+    /// @brief Prints adjacency matrix to os
+    /// @param id 
+    /// @param source 
+    /// @param target 
+    /// @param data 
+    /// @return 
     Edge<NData, EData>& add(size_t id, size_t source, size_t target, EData data);
+    /// @brief 
+    /// @param source 
+    /// @param target 
+    /// @param data 
+    /// @return 
     Edge<NData, EData>& add(size_t source, size_t target, EData data);
+    /// @brief 
+    /// @return 
     size_t size() const;
+    /// @brief 
+    /// @param id 
+    /// @return 
     bool exists(size_t id) const;
+    /// @brief 
+    /// @param source 
+    /// @param target 
+    /// @return 
     bool exists(size_t source, size_t target) const;
+    /// @brief 
+    /// @param id 
+    /// @return 
     Edge<NData, EData>& get(size_t id) const;
+    /// @brief 
+    /// @param source 
+    /// @param target 
+    /// @return 
     Edge<NData, EData>& get(size_t source, size_t target) const;
+    /// @brief 
+    /// @return 
     typename lib::Array<Edge<NData, EData>>::iterator begin() const;
+    /// @brief 
+    /// @return 
     typename lib::Array<Edge<NData, EData>>::iterator end() const;
 };
-
+/// @brief 
+/// @tparam NData 
+/// @tparam EData 
+/// @param os 
+/// @param edge 
+/// @return 
 template <typename NData, typename EData>
 std::ostream& operator<<(std::ostream& os, const Edge<NData, EData>& edge) {
     os << "edge (" << edge.getSource().getId() << ")-[" << edge.getId() << " {" << edge.getData() << "}]->(" << edge.getTarget().getId() << ")" << std::endl;
     return os;
 };
 
+/// @brief 
+/// @tparam NData 
+/// @tparam EData 
+/// @param os 
+/// @param edges 
+/// @return 
 template <typename NData, typename EData>
 std::ostream& operator<<(std::ostream& os, const Edges<NData, const EData>& edges) {
     edges.print(os);
@@ -122,12 +186,12 @@ Edges<NData, EData>& Edges<NData, EData>::operator=(Edges&& other) noexcept {
 };
 
 template <typename NData, typename EData>
-Edge<NData,EData>* Edges<NData, EData>::get_from_matrix(size_t source, size_t target) {
+size_t Edges<NData, EData>::get_from_matrix(size_t source, size_t target) {
     return adjacency_matrix_[source][target];
 };
 template <typename NData, typename EData>
 void Edges<NData,EData>::print(std::ostream& os) const {
-    for (auto it = edges_.begin(); it != edges_.end(); ++it) {
+    for (auto it = begin(); it != end(); ++it) {
         const Edge<NData,EData>& e = *it;
         os << e;
     }
@@ -136,24 +200,18 @@ template <typename NData, typename EData>
 void Edges<NData,EData>::printMatrix(std::ostream& os) const {
     for (auto it = adjacency_matrix_.begin(); it != adjacency_matrix_.end(); it++) {
         for (auto it2 = it->begin() ; it2 != it->end(); it2++) {
-            if (*it2 == nullptr)
+            if (*it2 == -1)
                 std::cout << '-';
             else
-                std::cout << (*it2)->getId();
+                std::cout << (*it2);
             std::cout << "|";
         }
         std::cout << std::endl;
     }
-    
-/*
--|0|1
-0|-|-
-1|-|-
-*/
 };
 template <typename NData, typename EData>
 Edge<NData, EData>& Edges<NData,EData>::add(size_t id, size_t source, size_t target, EData data) {
-    if (get_from_matrix(source, target) != nullptr)
+    if (get_from_matrix(source, target) != -1)
         throw ConflictingItemException("Attempting to add a new edge between a pair of nodes with identifiers "+ std::to_string(source) +" and "+ std::to_string(target) +" which already are connected with another existing edge");
     if (source >= adjacency_matrix_.size() || target >= adjacency_matrix_.size())
         throw NonexistingItemException("Attempting to add a new edge between a nonexisting pair of nodes with identifiers $source and " + std::to_string(target)+", only "+ std::to_string(adjacency_matrix_.size()) +" nodes are available");
@@ -167,7 +225,9 @@ Edge<NData, EData>& Edges<NData,EData>::add(size_t id, size_t source, size_t tar
     } catch (UnavailableMemoryException){
         throw UnavailableMemoryException("Unable to insert a new edge record into the underlying container of edges");
     }
-    adjacency_matrix_[source][target] = &edges_[edges_.size() - 1];
+    adjacency_matrix_[source][target] = edges_.size() - 1;
+    //if (oriented_)
+    //    adjacency_matrix_[target][source] = &edges_[edges_.size() - 1];
     return edges_[edges_.size() - 1];
 };
 template <typename NData, typename EData>
@@ -192,7 +252,7 @@ template <typename NData, typename EData>
 bool Edges<NData,EData>::exists(size_t source, size_t target) const {
     if (source >= adjacency_matrix_.size() || target >= adjacency_matrix_.size())
         throw NonexistingItemException("Attempting to test the existence of an edge between a nonexisting pair of nodes with identifiers "+std::to_string(source)+" and "+std::string(target)+", only "+std::string(adjacency_matrix_.size())+" nodes are available");
-    size_t id = get_from_matrix(source, target)->getId();
+    size_t id = get_from_matrix(source, target);
     return id < edges_.size() && id >= 0;
 };
 template <typename NData, typename EData>
@@ -205,10 +265,18 @@ template <typename NData, typename EData>
 Edge<NData, EData>& Edges<NData,EData>::get(size_t source, size_t target) const {
     if (adjacency_matrix_.size() <= source || adjacency_matrix_.size() <= target)
         throw NonexistingItemException("Attempting to access an edge between a nonexisting pair of nodes with identifiers "+std::to_string(source)+" and $target, only "+std::to_string(size)+" nodes are available"); 
-    size_t id = get_from_matrix(source, target)->getId();
+    size_t id = get_from_matrix(source, target);
     return edges_[id];
 };
-#pragma endregion
 
+template<typename NData, typename EData>
+typename lib::Array<Edge<NData, EData>>::iterator Edges<NData,EData>::begin() const {
+    return edges_.begin();
+};
+template<typename NData, typename EData>
+typename lib::Array<Edge<NData, EData>>::iterator Edges<NData,EData>::end() const {
+    return edges_.end();
+};
+#pragma endregion
 
 #endif

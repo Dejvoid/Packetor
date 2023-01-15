@@ -1,3 +1,4 @@
+/// @file Array.h
 #ifndef ARRAY_H_
 #define ARRAY_H_
 
@@ -6,8 +7,9 @@
 #include <iostream>
 #include <iterator>
 #include "Exception.h"
-
 namespace lib {
+/// @brief Class for storing items on non-changing place but still being dynamic
+/// @tparam T 
 template <typename T>
 class Array{
 private:
@@ -15,29 +17,54 @@ private:
     std::vector<std::unique_ptr<T[]>> data_;
     size_t block_size_;
     size_t element_count_;
+    /// @brief Allocates new block for initial storage
     void alloc_block();
+    /// @brief Gets item at @param index
+    /// @param index Tells index of desired item
+    /// @return const T&
     inline const T& get(size_t index) const;
 public:
+    /// @brief 
+    /// @param block_size 
     Array(size_t block_size = BLOCK_SIZE);
+    /// @brief 
+    /// @param array 
     Array(const Array<T>& array);
+    /// @brief 
+    /// @param array 
     Array(Array<T>&& array) noexcept;
     ~Array() = default;
     class iterator;
+    /// @brief appends item to the end
+    /// @param item 
     void push_back(const T& item);
     void push_back(T&& item);
+    /// @brief removes last item
     void pop_back();
+    /// @brief Tells how many items are in array
+    /// @return count of items
     inline size_t size() const { return element_count_; }
+    /// @brief prints content of the array
+    /// @param os 
     void print(std::ostream& os = std::cout) const;
+    /// @brief 
+    /// @param index 
+    /// @return item at given index
     T& at(size_t index) const;
-    //const T& at(size_t index) const;
+    /// @brief 
+    /// @param index 
+    /// @return 
     T& operator[](size_t index) const;
-    //const T operator[](size_t index) const;
-    Array<T>& operator=(const Array<T>& array); // copy assignment
-    Array<T>& operator=(Array<T>&& array) noexcept; // move assignment
+    /// @brief 
+    /// @param array 
+    /// @return item at given index
+    Array<T>& operator=(const Array<T>& array);
+    Array<T>& operator=(Array<T>&& array) noexcept;
     iterator begin() const;
     iterator end() const;
 };
-
+/// @brief Iterator for Array class
+/// @tparam T 
 template <typename T>
 class Array<T>::iterator {
     using iterator_category = std::forward_iterator_tag;
@@ -48,7 +75,13 @@ class Array<T>::iterator {
     const Array<T>* array_;
     size_t position_;
 public:
+    /// @brief 
+    /// @param array 
+    /// @param position 
     iterator(Array<T>* array, size_t position);
+    /// @brief 
+    /// @param array 
+    /// @param position 
     iterator(const Array<T>* array, size_t position);
     bool operator==(const iterator& other) const;
     bool operator!=(const iterator& other) const;

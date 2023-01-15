@@ -1,14 +1,19 @@
+/// @file Graph.h
 #ifndef GRAPH_H_
 #define GRAPH_H_
 
 #include "Node.h"
 #include "Edge.h"
 #include <fstream>
-
+/// @brief 
+enum class Type{
+    DIRECTED, UNDIRECTED
+};
+/// @brief 
+/// @tparam NData 
+/// @tparam EData 
 template <typename NData, typename EData>
 class Graph {
-private:
-    /* data */
 protected: 
     Nodes<NData, EData> nodes_;
     Edges<NData, EData> edges_;
@@ -19,24 +24,43 @@ public:
     ~Graph() = default;
     Graph& operator=(const Graph& other);
     Graph& operator=(Graph&& other) noexcept;
+    /// @brief 
+    /// @return 
     Nodes<NData, EData>& nodes();
+    /// @brief 
+    /// @return 
     Edges<NData, EData>& edges();
+    /// @brief 
+    /// @param os 
     void print(std::ostream& os = std::cout) const;
+    /// @brief 
+    /// @param filename 
     void print(const std::string& filename) const;
+    /// @brief 
+    /// @param is 
     void import(std::istream& is = std::cin);
+    /// @brief 
+    /// @param filename 
     void import(const std::string& filename);
+    virtual Type type() const = 0;
 };
-
+/// @brief 
+/// @tparam NData 
+/// @tparam EData 
 template <typename NData, typename EData>
 class UndirectedGraph : public Graph <NData, EData> {
     private: 
     public:
+    Type type() const override {return Type::UNDIRECTED; };
 };
-
+/// @brief 
+/// @tparam NData 
+/// @tparam EData 
 template <typename NData, typename EData>
 class DirectedGraph : public Graph <NData, EData> {
     private: 
     public:
+    Type type() const override {return Type::DIRECTED; };
 };
 
 #pragma region GraphMethods

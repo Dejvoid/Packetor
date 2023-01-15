@@ -16,7 +16,9 @@ public:
     Graph() = default;
     Graph(const Graph& other);
     Graph(Graph&& other) noexcept;
-    virtual ~Graph() = default;
+    ~Graph() = default;
+    Graph& operator=(const Graph& other);
+    Graph& operator=(Graph&& other) noexcept;
     Nodes<NData, EData>& nodes();
     Edges<NData, EData>& edges();
     void print(std::ostream& os = std::cout) const;
@@ -29,19 +31,36 @@ template <typename NData, typename EData>
 class UndirectedGraph : public Graph <NData, EData> {
     private: 
     public:
-    UndirectedGraph& operator=(const UndirectedGraph& other);
-    UndirectedGraph& operator=(UndirectedGraph&& other) noexcept;
 };
 
 template <typename NData, typename EData>
 class DirectedGraph : public Graph <NData, EData> {
     private: 
     public:
-    DirectedGraph& operator=(const DirectedGraph& other);
-    DirectedGraph& operator=(DirectedGraph&& other) noexcept;
 };
 
 #pragma region GraphMethods
+template <typename NData, typename EData>
+Graph<NData, EData>::Graph(const Graph& other) {
+    this->nodes_ = other.nodes_;
+    this->edges_ = other.edges_; 
+};
+template <typename NData, typename EData>
+Graph<NData, EData>::Graph(Graph&& other) noexcept {
+    this->nodes_ = std::move(other.nodes_);
+    this->edges_ = std::move(other.edges_);
+};
+template <typename NData, typename EData>
+Graph<NData, EData>& Graph<NData, EData>::operator=(const Graph& other) {
+    // TODO: clear nodes_ and edges_
+    this->nodes_ = other.nodes_;
+    this->edges_ = other.edges_;
+};
+template <typename NData, typename EData>
+Graph<NData, EData>& Graph<NData, EData>::operator=(Graph&& other) noexcept {
+    std::swap(this->nodes_, other.nodes_);
+    std::swap(this->edges_, other.edges_);
+};
 template <typename NData, typename EData>
 Nodes<NData, EData>& Graph<NData, EData>::nodes() {
     return nodes_;

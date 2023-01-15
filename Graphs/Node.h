@@ -25,8 +25,14 @@ template <typename NData, typename EData>
 class Nodes {
     private:
     lib::Array<Node<NData>> nodes_;
-    Edges<NData, EData>& edges_;
+    Edges<NData, EData>* edges_;
     public:
+    Nodes() = default;
+    Nodes(const Nodes& other);
+    Nodes(Nodes&& other) noexcept;
+    ~Nodes();
+    Nodes& operator=(const Nodes& other);
+    Nodes& operator=(Nodes&& other) noexcept;
     void print(std::ostream& os = std::cout) const;
     Node<NData>& add(size_t id, NData data);
     Node<NData>& add(NData data);
@@ -68,6 +74,28 @@ size_t Node<NData>::getId() const {
 
 #pragma endregion
 #pragma region NodesMethods
+
+template <typename NData, typename EData>
+Nodes<NData, EData>::Nodes(const Nodes& other) {
+
+};
+template <typename NData, typename EData>
+Nodes<NData, EData>::Nodes(Nodes&& other) noexcept {
+
+};
+template <typename NData, typename EData>
+Nodes<NData, EData>::~Nodes() {
+
+};
+template <typename NData, typename EData>
+Nodes<NData,EData>& Nodes<NData, EData>::operator=(const Nodes& other) {
+
+};
+template <typename NData, typename EData>
+Nodes<NData,EData>& Nodes<NData, EData>::operator=(Nodes&& other) noexcept {
+    
+};
+
 template <typename NData, typename EData>
 void Nodes<NData, EData>::print(std::ostream& os) const {
     for (auto it = nodes_.begin(); it != nodes_.end(); ++it) {
@@ -77,7 +105,7 @@ void Nodes<NData, EData>::print(std::ostream& os) const {
 template <typename NData, typename EData>
 Node<NData>& Nodes<NData, EData>::add(size_t id, NData data) {
     nodes_.push_back(Node<NData>(id, data));
-    edges_.adjacency_matrix_.push_back(std::vector<Edge<NData, EData>*>(id + 1, nullptr));
+    //edges_->adjacency_matrix_.push_back(std::vector<Edge<NData, EData>*>(id + 1, nullptr));
     return nodes_[nodes_.size() - 1];
 };
 template <typename NData, typename EData>

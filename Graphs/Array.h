@@ -28,14 +28,14 @@ public:
     void pop_back();
     inline size_t size() const { return element_count_; }
     void print(std::ostream& os = std::cout) const;
-    T& at(size_t index);
-    const T& at(size_t index) const;
-    T& operator[](size_t index);
-    const T operator[](size_t index) const;
+    T& at(size_t index) const;
+    //const T& at(size_t index) const;
+    T& operator[](size_t index) const;
+    //const T operator[](size_t index) const;
     Array<T>& operator=(const Array<T>& array); // copy assignment
     Array<T>& operator=(Array<T>&& array) noexcept; // move assignment
-    iterator begin();
-    iterator end();
+    iterator begin() const;
+    iterator end() const;
 };
 
 template <typename T>
@@ -45,10 +45,11 @@ class Array<T>::iterator {
     using value_type = T;
     using pointer = T*;
     using reference = T&;
-    Array<T>* array_;
+    const Array<T>* array_;
     size_t position_;
 public:
     iterator(Array<T>* array, size_t position);
+    iterator(const Array<T>* array, size_t position);
     bool operator==(const iterator& other) const;
     bool operator!=(const iterator& other) const;
     iterator& operator++();
@@ -66,7 +67,11 @@ Array<T>::iterator::iterator(Array<T>* array, size_t position){
     array_ = array;
     position_ = position;
 };
-
+template<typename T>
+Array<T>::iterator::iterator(const Array<T>* array, size_t position) {
+    array_ = array;
+    position_ = position;
+};
 template<typename T>
 bool Array<T>::iterator::operator==(const iterator& other) const{
     return position_ == other.position_;
@@ -207,32 +212,32 @@ const T& Array<T>::get(size_t index) const {
 };
 
 template<typename T>
-T& Array<T>::at(size_t index) {
+T& Array<T>::at(size_t index) const {
     if (index >= element_count_)
         throw OutOfRangeException("Index out of range");
     return const_cast<T&>(get(index));
 };
 
-template<typename T>
-const T& Array<T>::at(size_t index) const {
-    if (index >= element_count_)
-        throw OutOfRangeException("Index out of range");
-    return get(index);
-};
+//template<typename T>
+//const T& Array<T>::at(size_t index) const {
+//    if (index >= element_count_)
+//        throw OutOfRangeException("Index out of range");
+//    return get(index);
+//};
 
 template<typename T>
-T& Array<T>::operator[](size_t index){
+T& Array<T>::operator[](size_t index) const{
     if (index >= element_count_)
         throw OutOfRangeException("Index out of range");
     return const_cast<T&>(get(index));
 };
 
-template<typename T>
-const T Array<T>::operator[](size_t index) const{
-    if (index >= element_count_)
-        throw OutOfRangeException("Index out of range");
-    return get(index);
-};
+//template<typename T>
+//const T Array<T>::operator[](size_t index) const{
+//    if (index >= element_count_)
+//        throw OutOfRangeException("Index out of range");
+//    return get(index);
+//};
 
 template<typename T>
 Array<T>& Array<T>::operator=(const Array<T>& array){
@@ -270,14 +275,14 @@ Array<T>& Array<T>::operator=(Array<T>&& array) noexcept{
 }; 
 
 template<typename T>
-typename Array<T>::iterator Array<T>::begin(){
+typename Array<T>::iterator Array<T>::begin() const{
     if (element_count_ == 0)
         return iterator(this, element_count_ + 1);
     return iterator(this, 0);
 };
 
 template<typename T>
-typename Array<T>::iterator Array<T>::end(){
+typename Array<T>::iterator Array<T>::end() const{
     return iterator(this, element_count_ + 1);
 };
 

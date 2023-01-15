@@ -7,6 +7,7 @@ template <typename NData, typename EData>
 class Edge;
 template <typename NData, typename EData>
 class Edges;
+
 #include "Node.h"
 
 template <typename NData, typename EData>
@@ -14,13 +15,15 @@ class Edge {
     private:
     size_t id_;
     EData data_;
-    Node<NData>& source_;
-    Node<NData>& target_;
+    Node<NData>* source_;
+    Node<NData>* target_;
     public:
+    //friend std::ostream& operator<<(std::ostream& os, const Edge<NData, EData>& edge);
     Edge() = default;
-    Edge(size_t id, Node<NData>& source, Node<NData>& target, EData data);
+    Edge(size_t id, Node<NData>* source, Node<NData>* target, EData data);
     inline size_t getId() const;
     inline EData& getData();
+    inline const EData& getData() const;
     inline Node<NData>& getSource() const;
     inline Node<NData>& getTarget() const;
 };
@@ -28,13 +31,18 @@ class Edge {
 template <typename NData, typename EData>
 class Edges {
     private:
-    Nodes<NData, EData>& nodes_;
     lib::Array<Edge<NData,EData>> edges_;
     std::vector<std::vector<Edge<NData,EData>*>> adjacency_matrix_;
     friend Node<NData>& Nodes<NData, EData>::add(size_t id, NData data);
     size_t get_id_from_matrix(size_t source, size_t target);
+    Nodes<NData, EData>* nodes_;
     public:
-    Edges(Nodes<NData, EData>& nodes);
+    Edges() = default;
+    Edges(const Edges& other);
+    Edges(Edges&& other) noexcept;
+    ~Edges();
+    Edges& operator=(const Edges& other);
+    Edges& operator=(Edges&& other) noexcept;
     void print(std::ostream& os = std::cout) const;
     void printMatrix(std::ostream& os = std::cout) const;
     Edge<NData, EData>& add(size_t id, size_t source, size_t target, EData data);
@@ -55,14 +63,14 @@ std::ostream& operator<<(std::ostream& os, const Edge<NData, EData>& edge) {
 };
 
 template <typename NData, typename EData>
-std::ostream& operator<<(std::ostream& os, const Edges<NData, EData>& edges) {
+std::ostream& operator<<(std::ostream& os, const Edges<NData, const EData>& edges) {
     edges.print(os);
     return os;
 };
 
 #pragma region EdgeMethods
 template <typename NData, typename EData>
-Edge<NData, EData>::Edge(size_t id, Node<NData>& source, Node<NData>& target, EData data) {
+Edge<NData, EData>::Edge(size_t id, Node<NData>* source, Node<NData>* target, EData data) {
     id_ = id;
     data_ = data;
     source_ = source;
@@ -77,28 +85,50 @@ EData& Edge<NData,EData>::getData() {
     return data_;
 };
 template <typename NData, typename EData>
+const EData& Edge<NData,EData>::getData() const {
+    return data_;
+};
+template <typename NData, typename EData>
 Node<NData>& Edge<NData,EData>::getSource() const {
-    return source_;
+    return (*source_);
 };
 template <typename NData, typename EData>
 Node<NData>& Edge<NData,EData>::getTarget() const {
-    return target_;
+    return (*target_);
 };
 #pragma endregion
 
 #pragma region EdgesMethods
 template <typename NData, typename EData>
+Edges<NData, EData>::Edges(const Edges& other) {
+
+};
+template <typename NData, typename EData>
+Edges<NData, EData>::Edges(Edges&& other) noexcept {
+
+};
+template <typename NData, typename EData>
+Edges<NData, EData>::~Edges() {
+
+};
+template <typename NData, typename EData>
+Edges<NData, EData>& Edges<NData, EData>::operator=(const Edges& other) {
+
+};
+template <typename NData, typename EData>
+Edges<NData, EData>& Edges<NData, EData>::operator=(Edges&& other) noexcept {
+
+};
+
+template <typename NData, typename EData>
 size_t Edges<NData, EData>::get_id_from_matrix(size_t source, size_t target) {
     return adjacency_matrix_[source][target]->getId();
 };
 template <typename NData, typename EData>
-Edges<NData, EData>::Edges(Nodes<NData, EData>& nodes) {
-    nodes_ = nodes;
-};
-template <typename NData, typename EData>
 void Edges<NData,EData>::print(std::ostream& os) const {
     for (auto it = edges_.begin(); it != edges_.end(); ++it) {
-        os << *it;
+        const Edge<NData,EData>& e = *it;
+        os << e;
     }
 };
 template <typename NData, typename EData>
@@ -111,13 +141,16 @@ void Edges<NData,EData>::printMatrix(std::ostream& os) const {
 };
 template <typename NData, typename EData>
 Edge<NData, EData>& Edges<NData,EData>::add(size_t id, size_t source, size_t target, EData data) {
-    //Edge<NData, EData> edge(id,nodes_[source], nodes_[target], data);
-    //edges_.push_back(edge);
-    //return edges_[edges_.size() - 1];
+    Edge<NData, EData> edge(id, &(nodes_->get(source)) , &(nodes_->get(target)), data);
+    edges_.push_back(edge);
+    return edges_[edges_.size() - 1];
 };
 template <typename NData, typename EData>
 Edge<NData, EData>& Edges<NData,EData>::add(size_t source, size_t target, EData data) {
-    //return add(edges_.size(), source, target, data);
+    size_t id = edges_.size();
+    Edge<NData, EData> edge(id, &(nodes_->get(source)) , &(nodes_->get(target)), data);
+    edges_.push_back(edge);
+    return edges_[edges_.size() - 1];
 };
 template <typename NData, typename EData>
 size_t Edges<NData,EData>::size() const {

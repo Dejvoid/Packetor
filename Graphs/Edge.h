@@ -34,7 +34,7 @@ class Edges {
     lib::Array<Edge<NData,EData>> edges_;
     std::vector<std::vector<Edge<NData,EData>*>> adjacency_matrix_;
     friend Node<NData>& Nodes<NData, EData>::add(size_t id, NData data);
-    size_t get_id_from_matrix(size_t source, size_t target);
+    Edge<NData, EData>* get_from_matrix(size_t source, size_t target);
     Nodes<NData, EData>* nodes_;
     public:
     Edges() = default;
@@ -121,8 +121,8 @@ Edges<NData, EData>& Edges<NData, EData>::operator=(Edges&& other) noexcept {
 };
 
 template <typename NData, typename EData>
-size_t Edges<NData, EData>::get_id_from_matrix(size_t source, size_t target) {
-    return adjacency_matrix_[source][target]->getId();
+Edge<NData,EData>* Edges<NData, EData>::get_from_matrix(size_t source, size_t target) {
+    return adjacency_matrix_[source][target];
 };
 template <typename NData, typename EData>
 void Edges<NData,EData>::print(std::ostream& os) const {
@@ -141,8 +141,20 @@ void Edges<NData,EData>::printMatrix(std::ostream& os) const {
 };
 template <typename NData, typename EData>
 Edge<NData, EData>& Edges<NData,EData>::add(size_t id, size_t source, size_t target, EData data) {
+    if (get_from_matrix() != nullptr)
+        throw ConflictingItemException("Attempting to add a new edge between a pair of nodes with identifiers "+ std::string(source) +" and "+ std::string(target) +" which already are connected with another existing edge");
+    if (source >= adjacency_matrix_.size() || target >= adjacency_matrix_.size())
+        throw NonexistingItemException("Attempting to add a new edge between a nonexisting pair of nodes with identifiers $source and " + std::string(target)+", only "+ std::string(adjacency_matrix_.size()) +" nodes are available");
+    if (exists(id))
+        throw ConflictingItemException("Attempting to add a new edge with identifier "+ std::string(id) +" which already is associated with another existing edge");
+    if (id != size())
+        throw InvalidIdentifierException("Attempting to add a new edge with invalid identifier "+std::string(id)+", expected $size instead");
     Edge<NData, EData> edge(id, &(nodes_->get(source)) , &(nodes_->get(target)), data);
-    edges_.push_back(edge);
+    try{
+        edges_.push_back(edge);
+    } catch (UnavailableMemoryException){
+        throw UnavailableMemoryException("Unable to insert a new edge record into the underlying container of edges");
+    }
     return edges_[edges_.size() - 1];
 };
 template <typename NData, typename EData>
@@ -162,16 +174,22 @@ bool Edges<NData,EData>::exists(size_t id) const {
 };
 template <typename NData, typename EData>
 bool Edges<NData,EData>::exists(size_t source, size_t target) const {
-    size_t id = get_id_from_matrix(source, target);
+    if (source >= adjacency_matrix_.size() || target >= adjacency_matrix_.size())
+        throw NonexistingItemException("Attempting to test the existence of an edge between a nonexisting pair of nodes with identifiers "+std::string(source)+" and "+std::string(target)+", only "+std::string(adjacency_matrix_.size())+" nodes are available");
+    size_t id = get_from_matrix(source, target)->getId();
     return id < edges_.size() && id >= 0;
 };
 template <typename NData, typename EData>
 Edge<NData, EData>& Edges<NData,EData>::get(size_t id) const {
+    if (!exists(id)) 
+        throw NonexistingItemException("Attempting to access a nonexisting edge with identifier "+std::string(id)+", only "+std::string(adjacency_matrix_.size())+" edges are available"); 
     return edges_[id];
 };
 template <typename NData, typename EData>
 Edge<NData, EData>& Edges<NData,EData>::get(size_t source, size_t target) const {
-    size_t id = get_id_from_matrix(source, target);
+    if (adjacency_matrix_.size() <= source || adjacency_matrix_.size() <= target)
+        throw NonexistingItemException("Attempting to access an edge between a nonexisting pair of nodes with identifiers "+std::string(source)+" and $target, only "+std::string(size)+" nodes are available"); 
+    size_t id = get_from_matrix(source, target)->getId();
     return edges_[id];
 };
 #pragma endregion

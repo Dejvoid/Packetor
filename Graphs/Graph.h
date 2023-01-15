@@ -77,7 +77,11 @@ void Graph<NData, EData>::print(std::ostream& os) const {
 template <typename NData, typename EData>
 void Graph<NData, EData>::print(const std::string& filename) const {
     std::ofstream ofs;
+    try {
     ofs.open(filename);
+    } catch (std::ofstream::failure){
+        throw FileProcessingException("Unable to open an output file " + filename);
+    }
     print(ofs);
     ofs.close();
 };
@@ -87,7 +91,9 @@ void Graph<NData, EData>::import(std::istream& is) {
 };
 template <typename NData, typename EData>
 void Graph<NData, EData>::import(const std::string& filename) {
-    
+    //catch (std::ifstream::failure){
+    //    FileProcessingException("Unable to open an input file $filename"); 
+    //}
 };
 #pragma endregion
 

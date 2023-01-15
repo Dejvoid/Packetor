@@ -25,7 +25,7 @@ template <typename NData, typename EData>
 class Nodes {
     private:
     lib::Array<Node<NData>> nodes_;
-    Edges<NData, EData>* edges_;
+    //Edges<NData,EData>* edges_;
     public:
     Nodes() = default;
     Nodes(const Nodes& other);
@@ -104,8 +104,22 @@ void Nodes<NData, EData>::print(std::ostream& os) const {
 };
 template <typename NData, typename EData>
 Node<NData>& Nodes<NData, EData>::add(size_t id, NData data) {
+    if (exists(id))
+        throw ConflictingItemException("Attempting to add a new node with identifier "+std::string(id)+" which already is associated with another existing node");
+    if (id != size())
+        throw InvalidIdentifierException("Attempting to add a new node with invalid identifier "+std::string(id)+", expected "+std::string(size())+" instead");
+    try {
     nodes_.push_back(Node<NData>(id, data));
+    } catch (UnavailableMemoryException){
+        throw UnavailableMemoryException("Unable to insert a new node record into the underlying container of nodes");
+    }
+    /*try {
     //edges_->adjacency_matrix_.push_back(std::vector<Edge<NData, EData>*>(id + 1, nullptr));
+    } catch (const std::bad_alloc&) {
+        nodes_.pop_back();
+        throw UnavailableMemoryException("Unable to extend the underlying adjacency matrix container for edges");
+    }
+    */
     return nodes_[nodes_.size() - 1];
 };
 template <typename NData, typename EData>
@@ -123,11 +137,15 @@ bool Nodes<NData, EData>::exists(size_t id) const {
 };
 template <typename NData, typename EData>
 Node<NData>& Nodes<NData, EData>::get(size_t id) const {
+    if (!exists(id))
+        throw NonexistingItemException("Attempting to access a nonexisting node with identifier "+std::string(id)+", only "+std::string(size())+" nodes are available");
     return nodes_[id];
 };
 template <typename NData, typename EData>
 Node<NData>& Nodes<NData, EData>::operator[](size_t id) const {
-    //return nodes_[id];
+    if (!exists(id))
+        throw NonexistingItemException("Attempting to access a nonexisting node with identifier "+std::string(id)+", only "+std::string(size())+" nodes are available");
+    return nodes_[id];
 };
 template <typename NData, typename EData>
 typename lib::Array<Node<NData>>::iterator Nodes<NData, EData>::begin() const {

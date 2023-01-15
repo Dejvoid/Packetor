@@ -283,7 +283,9 @@ typename Array<T>::iterator Array<T>::begin() const{
 
 template<typename T>
 typename Array<T>::iterator Array<T>::end() const{
-    return iterator(this, element_count_ + 1);
+    if (element_count_ == 0)
+        return iterator(this, element_count_ + 1);
+    return iterator(this, element_count_);
 };
 
 template<typename T>

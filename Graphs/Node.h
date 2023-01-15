@@ -19,18 +19,20 @@ class Node {
     Node(size_t id, NData data);
     size_t getId() const;
     NData& getData();
+    const NData& getData() const;
 };
 
 template <typename NData, typename EData>
 class Nodes {
     private:
     lib::Array<Node<NData>> nodes_;
-    //Edges<NData,EData>* edges_;
+    Edges<NData,EData>* edges_;
     public:
     Nodes() = default;
+    Nodes(Edges<NData, EData>* edges) : edges_(edges){};
     Nodes(const Nodes& other);
     Nodes(Nodes&& other) noexcept;
-    ~Nodes();
+    ~Nodes() = default;
     Nodes& operator=(const Nodes& other);
     Nodes& operator=(Nodes&& other) noexcept;
     void print(std::ostream& os = std::cout) const;
@@ -66,7 +68,10 @@ template <typename NData>
 NData& Node<NData>::getData() {
     return data_;
 };
-
+template <typename NData>
+const NData& Node<NData>::getData() const {
+    return data_;
+};
 template <typename NData>
 size_t Node<NData>::getId() const {
     return id_;
@@ -84,16 +89,15 @@ Nodes<NData, EData>::Nodes(Nodes&& other) noexcept {
 
 };
 template <typename NData, typename EData>
-Nodes<NData, EData>::~Nodes() {
-
-};
-template <typename NData, typename EData>
 Nodes<NData,EData>& Nodes<NData, EData>::operator=(const Nodes& other) {
-
+    this->nodes_.~Array();
+    this->nodes_ = other.nodes_;
+    return *this;
 };
 template <typename NData, typename EData>
 Nodes<NData,EData>& Nodes<NData, EData>::operator=(Nodes&& other) noexcept {
-    
+    std::swap(this->nodes_, other.nodes_);
+    return *this;
 };
 
 template <typename NData, typename EData>
@@ -105,21 +109,23 @@ void Nodes<NData, EData>::print(std::ostream& os) const {
 template <typename NData, typename EData>
 Node<NData>& Nodes<NData, EData>::add(size_t id, NData data) {
     if (exists(id))
-        throw ConflictingItemException("Attempting to add a new node with identifier "+std::string(id)+" which already is associated with another existing node");
+        throw ConflictingItemException("Attempting to add a new node with identifier "+std::to_string(id)+" which already is associated with another existing node");
     if (id != size())
-        throw InvalidIdentifierException("Attempting to add a new node with invalid identifier "+std::string(id)+", expected "+std::string(size())+" instead");
+        throw InvalidIdentifierException("Attempting to add a new node with invalid identifier "+std::to_string(id)+", expected "+std::to_string(size())+" instead");
     try {
-    nodes_.push_back(Node<NData>(id, data));
+        nodes_.push_back(Node<NData>(id, data));
     } catch (UnavailableMemoryException){
         throw UnavailableMemoryException("Unable to insert a new node record into the underlying container of nodes");
     }
-    /*try {
-    //edges_->adjacency_matrix_.push_back(std::vector<Edge<NData, EData>*>(id + 1, nullptr));
+    try {
+        for (auto it = edges_->adjacency_matrix_.begin(); it != edges_->adjacency_matrix_.end(); ++it){
+            it->push_back(nullptr);
+        }
+        edges_->adjacency_matrix_.push_back(std::vector<Edge<NData, EData>*>(id + 1, nullptr));
     } catch (const std::bad_alloc&) {
         nodes_.pop_back();
         throw UnavailableMemoryException("Unable to extend the underlying adjacency matrix container for edges");
     }
-    */
     return nodes_[nodes_.size() - 1];
 };
 template <typename NData, typename EData>
@@ -138,13 +144,13 @@ bool Nodes<NData, EData>::exists(size_t id) const {
 template <typename NData, typename EData>
 Node<NData>& Nodes<NData, EData>::get(size_t id) const {
     if (!exists(id))
-        throw NonexistingItemException("Attempting to access a nonexisting node with identifier "+std::string(id)+", only "+std::string(size())+" nodes are available");
+        throw NonexistingItemException("Attempting to access a nonexisting node with identifier "+std::to_string(id)+", only "+std::to_string(size())+" nodes are available");
     return nodes_[id];
 };
 template <typename NData, typename EData>
 Node<NData>& Nodes<NData, EData>::operator[](size_t id) const {
     if (!exists(id))
-        throw NonexistingItemException("Attempting to access a nonexisting node with identifier "+std::string(id)+", only "+std::string(size())+" nodes are available");
+        throw NonexistingItemException("Attempting to access a nonexisting node with identifier "+std::to_string(id)+", only "+std::to_string(size())+" nodes are available");
     return nodes_[id];
 };
 template <typename NData, typename EData>

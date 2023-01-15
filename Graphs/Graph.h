@@ -13,7 +13,7 @@ protected:
     Nodes<NData, EData> nodes_;
     Edges<NData, EData> edges_;
 public:
-    Graph() = default;
+    Graph() : nodes_(&edges_), edges_(&nodes_) { };
     Graph(const Graph& other);
     Graph(Graph&& other) noexcept;
     ~Graph() = default;
@@ -42,8 +42,10 @@ class DirectedGraph : public Graph <NData, EData> {
 #pragma region GraphMethods
 template <typename NData, typename EData>
 Graph<NData, EData>::Graph(const Graph& other) {
+    this->nodes_.~Nodes();
+    this->edges_.~Edges();
     this->nodes_ = other.nodes_;
-    this->edges_ = other.edges_; 
+    this->edges_ = other.edges_;
 };
 template <typename NData, typename EData>
 Graph<NData, EData>::Graph(Graph&& other) noexcept {
@@ -52,7 +54,8 @@ Graph<NData, EData>::Graph(Graph&& other) noexcept {
 };
 template <typename NData, typename EData>
 Graph<NData, EData>& Graph<NData, EData>::operator=(const Graph& other) {
-    // TODO: clear nodes_ and edges_
+    // nodes_.~Nodes();
+    // edges_.~Edges();
     this->nodes_ = other.nodes_;
     this->edges_ = other.edges_;
 };

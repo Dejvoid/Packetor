@@ -38,9 +38,10 @@ class Edges {
     Nodes<NData, EData>* nodes_;
     public:
     Edges() = default;
+    Edges(Nodes<NData, EData>* nodes) : nodes_(nodes) {};
     Edges(const Edges& other);
     Edges(Edges&& other) noexcept;
-    ~Edges();
+    ~Edges() = default;
     Edges& operator=(const Edges& other);
     Edges& operator=(Edges&& other) noexcept;
     void print(std::ostream& os = std::cout) const;
@@ -101,23 +102,23 @@ Node<NData>& Edge<NData,EData>::getTarget() const {
 #pragma region EdgesMethods
 template <typename NData, typename EData>
 Edges<NData, EData>::Edges(const Edges& other) {
-
+    //this->adjacency_matrix_ = other.adjacency_matrix_;
+    //this->edges_ = other.edges_;
+    //this->nodes_ = other.nodes_;
 };
 template <typename NData, typename EData>
 Edges<NData, EData>::Edges(Edges&& other) noexcept {
 
 };
 template <typename NData, typename EData>
-Edges<NData, EData>::~Edges() {
-
-};
-template <typename NData, typename EData>
 Edges<NData, EData>& Edges<NData, EData>::operator=(const Edges& other) {
-
+    
+    return *this;
 };
 template <typename NData, typename EData>
 Edges<NData, EData>& Edges<NData, EData>::operator=(Edges&& other) noexcept {
-
+    
+    return *this;
 };
 
 template <typename NData, typename EData>
@@ -133,6 +134,17 @@ void Edges<NData,EData>::print(std::ostream& os) const {
 };
 template <typename NData, typename EData>
 void Edges<NData,EData>::printMatrix(std::ostream& os) const {
+    for (auto it = adjacency_matrix_.begin(); it != adjacency_matrix_.end(); it++) {
+        for (auto it2 = it->begin() ; it2 != it->end(); it2++) {
+            if (*it2 == nullptr)
+                std::cout << '-';
+            else
+                std::cout << (*it2)->getId();
+            std::cout << "|";
+        }
+        std::cout << std::endl;
+    }
+    
 /*
 -|0|1
 0|-|-
@@ -141,28 +153,32 @@ void Edges<NData,EData>::printMatrix(std::ostream& os) const {
 };
 template <typename NData, typename EData>
 Edge<NData, EData>& Edges<NData,EData>::add(size_t id, size_t source, size_t target, EData data) {
-    if (get_from_matrix() != nullptr)
-        throw ConflictingItemException("Attempting to add a new edge between a pair of nodes with identifiers "+ std::string(source) +" and "+ std::string(target) +" which already are connected with another existing edge");
+    if (get_from_matrix(source, target) != nullptr)
+        throw ConflictingItemException("Attempting to add a new edge between a pair of nodes with identifiers "+ std::to_string(source) +" and "+ std::to_string(target) +" which already are connected with another existing edge");
     if (source >= adjacency_matrix_.size() || target >= adjacency_matrix_.size())
-        throw NonexistingItemException("Attempting to add a new edge between a nonexisting pair of nodes with identifiers $source and " + std::string(target)+", only "+ std::string(adjacency_matrix_.size()) +" nodes are available");
+        throw NonexistingItemException("Attempting to add a new edge between a nonexisting pair of nodes with identifiers $source and " + std::to_string(target)+", only "+ std::to_string(adjacency_matrix_.size()) +" nodes are available");
     if (exists(id))
-        throw ConflictingItemException("Attempting to add a new edge with identifier "+ std::string(id) +" which already is associated with another existing edge");
+        throw ConflictingItemException("Attempting to add a new edge with identifier "+ std::to_string(id) +" which already is associated with another existing edge");
     if (id != size())
-        throw InvalidIdentifierException("Attempting to add a new edge with invalid identifier "+std::string(id)+", expected $size instead");
+        throw InvalidIdentifierException("Attempting to add a new edge with invalid identifier "+std::to_string(id)+", expected $size instead");
     Edge<NData, EData> edge(id, &(nodes_->get(source)) , &(nodes_->get(target)), data);
     try{
         edges_.push_back(edge);
     } catch (UnavailableMemoryException){
         throw UnavailableMemoryException("Unable to insert a new edge record into the underlying container of edges");
     }
+    adjacency_matrix_[source][target] = &edges_[edges_.size() - 1];
     return edges_[edges_.size() - 1];
 };
 template <typename NData, typename EData>
 Edge<NData, EData>& Edges<NData,EData>::add(size_t source, size_t target, EData data) {
     size_t id = edges_.size();
-    Edge<NData, EData> edge(id, &(nodes_->get(source)) , &(nodes_->get(target)), data);
-    edges_.push_back(edge);
-    return edges_[edges_.size() - 1];
+    return add(id,source,target,data);
+    //Edge<NData, EData> edge(id, &(nodes_->get(source)) , &(nodes_->get(target)), data);
+    //edges_.push_back(edge);
+    //auto ret = edges_[edges_.size() - 1];
+    //adjacency_matrix_[source][target] = &ret;
+    //return ret;
 };
 template <typename NData, typename EData>
 size_t Edges<NData,EData>::size() const {
@@ -175,20 +191,20 @@ bool Edges<NData,EData>::exists(size_t id) const {
 template <typename NData, typename EData>
 bool Edges<NData,EData>::exists(size_t source, size_t target) const {
     if (source >= adjacency_matrix_.size() || target >= adjacency_matrix_.size())
-        throw NonexistingItemException("Attempting to test the existence of an edge between a nonexisting pair of nodes with identifiers "+std::string(source)+" and "+std::string(target)+", only "+std::string(adjacency_matrix_.size())+" nodes are available");
+        throw NonexistingItemException("Attempting to test the existence of an edge between a nonexisting pair of nodes with identifiers "+std::to_string(source)+" and "+std::string(target)+", only "+std::string(adjacency_matrix_.size())+" nodes are available");
     size_t id = get_from_matrix(source, target)->getId();
     return id < edges_.size() && id >= 0;
 };
 template <typename NData, typename EData>
 Edge<NData, EData>& Edges<NData,EData>::get(size_t id) const {
     if (!exists(id)) 
-        throw NonexistingItemException("Attempting to access a nonexisting edge with identifier "+std::string(id)+", only "+std::string(adjacency_matrix_.size())+" edges are available"); 
+        throw NonexistingItemException("Attempting to access a nonexisting edge with identifier "+std::to_string(id)+", only "+std::to_string(adjacency_matrix_.size())+" edges are available"); 
     return edges_[id];
 };
 template <typename NData, typename EData>
 Edge<NData, EData>& Edges<NData,EData>::get(size_t source, size_t target) const {
     if (adjacency_matrix_.size() <= source || adjacency_matrix_.size() <= target)
-        throw NonexistingItemException("Attempting to access an edge between a nonexisting pair of nodes with identifiers "+std::string(source)+" and $target, only "+std::string(size)+" nodes are available"); 
+        throw NonexistingItemException("Attempting to access an edge between a nonexisting pair of nodes with identifiers "+std::to_string(source)+" and $target, only "+std::to_string(size)+" nodes are available"); 
     size_t id = get_from_matrix(source, target)->getId();
     return edges_[id];
 };

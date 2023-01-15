@@ -90,13 +90,50 @@ void Graph<NData, EData>::print(const std::string& filename) const {
 };
 template <typename NData, typename EData>
 void Graph<NData, EData>::import(std::istream& is) {
-
+    std::string type;
+    while(is >> type){
+    if (type == "node") {
+        is.ignore(3, '(');
+        size_t id;
+        NData data;
+        is >> id;
+        char a = is.get();
+        is.ignore(3, '{');
+        is >> data;
+        std::cout << "id: "<< id << " data: " << data <<std::endl;
+        char b = is.get();
+    }
+    else if (type == "edge") {
+        is.ignore(3, '(');
+        size_t source;
+        is >> source;
+        is.ignore(3, '[');
+        size_t id;
+        is >> id;
+        is.ignore(3, '{');
+        EData data;
+        is >> data;
+        is.ignore(6, '(');
+        size_t target;
+        is >> target;
+        std::cout << "id: "<< id << " data: " << data << " source:  "<< source << " target: "<< target <<std::endl;
+        char b = is.get();
+    }
+    }
+    //std::cout << type << std::endl;
+    
 };
 template <typename NData, typename EData>
 void Graph<NData, EData>::import(const std::string& filename) {
-    //catch (std::ifstream::failure){
-    //    FileProcessingException("Unable to open an input file $filename"); 
-    //}
+    std::ifstream ifs;
+    try {
+        ifs.open(filename);
+    }
+    catch (std::ifstream::failure){
+        FileProcessingException("Unable to open an input file $filename"); 
+    }
+    import(ifs);
+    ifs.close();
 };
 #pragma endregion
 

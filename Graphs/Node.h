@@ -23,15 +23,17 @@ class Node {
     public:
     Node() = default;
     Node(size_t id, NData data);
-    /// @brief 
+    /// @brief Get id of the node
     /// @return Identifier of the node
     size_t getId() const;
-    /// @brief 
+    /// @brief Get data of the node
     /// @return Node data
     NData& getData();
+    /// @brief Get data of the node
+    /// @return Node data
     const NData& getData() const;
 };
-/// @brief Graph nodes list.
+/// @brief Structure for storing graph nodes
 /// @tparam NData 
 /// @tparam EData 
 template <typename NData, typename EData>
@@ -54,7 +56,7 @@ class Nodes {
     /// @param other 
     Nodes(Nodes&& other) noexcept;
     ~Nodes() = default;
-    /// @brief 
+    /// @brief After copy-assignment the nodes_ field becomes unusable and must be filled from Graph copy contructor -> don't use Nodes without Graph
     /// @param other 
     /// @return 
     Nodes& operator=(const Nodes& other);
@@ -74,7 +76,7 @@ class Nodes {
     /// @param data Node data
     /// @return Reference to created node
     Node<NData>& add(NData data);
-    /// @brief 
+    /// @brief Returns size of structure
     /// @return Node count
     size_t size() const;
     /// @brief Tells if node id is present in the list

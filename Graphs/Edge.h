@@ -9,103 +9,122 @@ template <typename NData, typename EData>
 class Edge;
 template <typename NData, typename EData>
 class Edges;
-#include "Node.h"
+#include "Graph.h"
 
-/// @brief 
+/// @brief Structure for storing graph edges
 /// @tparam NData 
 /// @tparam EData 
 template <typename NData, typename EData>
 class Edge {
     private:
+    /// @brief Unique identifier of the edge
     size_t id_;
+    /// @brief Data content of the edge, must support reading from stream
     EData data_;
+    /// @brief Source node of the edge
     Node<NData>* source_;
+    /// @brief Target node of the edge
     Node<NData>* target_;
     public:
-    //friend std::ostream& operator<<(std::ostream& os, const Edge<NData, EData>& edge);
     Edge() = default;
     /// @brief 
-    /// @param id 
-    /// @param source 
-    /// @param target 
-    /// @param data 
+    /// @param id - Identifier for the edge
+    /// @param source - Source node
+    /// @param target - Target node
+    /// @param data - Data of the edge
     Edge(size_t id, Node<NData>* source, Node<NData>* target, EData data);
     /// @brief 
-    /// @return 
+    /// @return Identifier of the edge
     inline size_t getId() const;
     /// @brief 
-    /// @return 
+    /// @return Data of the edge
     inline EData& getData();
     /// @brief 
-    /// @return 
+    /// @return Data of the edge
     inline const EData& getData() const;
+    /// @brief 
+    /// @return Source node of the edge
     inline Node<NData>& getSource() const;
+    /// @brief 
+    /// @return Target node of the edge
     inline Node<NData>& getTarget() const;
 };
-/// @brief 
+/// @brief Structure for storing graph edges 
 /// @tparam NData 
 /// @tparam EData 
 template <typename NData, typename EData>
 class Edges {
     private:
+    /// @brief Storage of edges
     lib::Array<Edge<NData,EData>> edges_;
+    /// @brief Adjacency matrix of the graph for faster edge searching
     std::vector<std::vector<size_t>> adjacency_matrix_;
     friend Node<NData>& Nodes<NData, EData>::add(size_t id, NData data);
     friend class Graph<NData, EData>;
+    friend class IncidentEdges;
+    /// @brief Gets identifier of the edge based on its nodes
+    /// @param source - source node of the edge
+    /// @param target - target node of the edge
+    /// @return Identifier of the edge
     size_t get_from_matrix(size_t source, size_t target) const;
+    /// @brief Adds new node to adj. matrix
     void add_n_to_matrix();
+    /// @brief adds new edge to adj. matrix
+    /// @param edge 
     void add_e_to_matrix(Edge<NData, EData>& edge);
-    Nodes<NData, EData>* nodes_;
+    /// @brief Pointer to graph owner of the edges
+    const Graph<NData, EData>* graph_;
     public:
     Edges() = default;
     /// @brief 
     /// @param nodes 
-    Edges(Nodes<NData, EData>* nodes) : nodes_(nodes) {};
+    Edges(const Graph<NData, EData>* graph) : graph_(graph) {};
     Edges(const Edges& other);
     Edges(Edges&& other) noexcept;
     ~Edges() = default;
     Edges& operator=(const Edges& other);
     Edges& operator=(Edges&& other) noexcept;
-    /// @brief 
+    /// @brief Prints edges
     /// @param os 
     void print(std::ostream& os = std::cout) const;
-    /// @brief 
+    /// @brief Prints the adj. matrix
     /// @param os 
     void printMatrix(std::ostream& os = std::cout) const;
-    /// @brief Prints adjacency matrix to os
-    /// @param id 
-    /// @param source 
-    /// @param target 
+    /// @brief Creates new edge in the graph with given id
+    /// @param id - dependent on the state of the structure
+    /// @param source - source node
+    /// @param target - target node
     /// @param data 
-    /// @return 
+    /// @return reference to the created edge
     Edge<NData, EData>& add(size_t id, size_t source, size_t target, EData data);
-    /// @brief 
-    /// @param source 
-    /// @param target 
+    /// @brief Creates new edge in the graph
+    /// @param source - source node
+    /// @param target - target node
     /// @param data 
-    /// @return 
+    /// @return reference to the created edge
     Edge<NData, EData>& add(size_t source, size_t target, EData data);
-    /// @brief 
+    /// @brief gets the size of the structure
     /// @return 
     size_t size() const;
-    /// @brief 
+    /// @brief tells if edge exists
     /// @param id 
     /// @return 
     bool exists(size_t id) const;
-    /// @brief 
+    /// @brief tells if edge exists
     /// @param source 
     /// @param target 
     /// @return 
     bool exists(size_t source, size_t target) const;
-    /// @brief 
+    /// @brief gets edge based on its id
     /// @param id 
     /// @return 
     Edge<NData, EData>& get(size_t id) const;
-    /// @brief 
+    /// @brief class to represent nodes incident with give node, used for indexing
+    class IncidentEdges;
+    /// @brief gets edge based on incident nodes
     /// @param source 
     /// @param target 
     /// @return 
-    class IncidentEdges;
     Edge<NData, EData>& get(size_t source, size_t target) const;
     IncidentEdges operator[](size_t index) const;
     /// @brief 
@@ -131,7 +150,14 @@ typename Edges<NData, EData>::IncidentEdges Edges<NData, EData>::operator[](size
 }
 template <typename NData, typename EData> 
 Edge<NData, EData>& Edges<NData, EData>::IncidentEdges::operator[](size_t index) const {
-    return edges_->get(source_, index);
+    if (edges_->adjacency_matrix_.size() <= source_)
+        throw NonexistingItemException("Attempting to access an edge outgoing from a nonexisting source node with identifier "+std::to_string(source_) + ", only "+ std::to_string(edges_->adjacency_matrix_.size()) +" nodes are available"); 
+    if (edges_->adjacency_matrix_.size() <= index)
+        throw NonexistingItemException("Attempting to access an edge incoming to a nonexisting target node with identifier "+ std::to_string(index) +", only "+ std::to_string(edges_->adjacency_matrix_.size()) +" nodes are available");
+    if (!edges_->exists(source_, index))
+        throw NonexistingItemException("Attempting to access a nonexisting edge between a pair of nodes with identifiers "+ std::to_string(source_) +" and "+ std::to_string(index) +"");
+    size_t id = edges_->get_from_matrix(source_, index);
+    return edges_->edges_[id];
 };
 /// @brief 
 /// @tparam NData 
@@ -218,7 +244,12 @@ size_t Edges<NData, EData>::get_from_matrix(size_t source, size_t target) const 
 
 template <typename NData, typename EData>
 void Edges<NData, EData>::add_e_to_matrix(Edge<NData, EData>& edge){
-    adjacency_matrix_[edge.getSource().getId()][edge.getTarget().getId()] = edge.getId() + 1;
+    size_t source = edge.getSource().getId();
+    size_t target = edge.getTarget().getId();
+    size_t id = edge.getId();
+    adjacency_matrix_[source][target] = id + 1;
+    if (graph_->type() == Type::UNDIRECTED)
+        adjacency_matrix_[target][source] = id + 1;
 };
 
 template <typename NData, typename EData>
@@ -252,34 +283,27 @@ void Edges<NData,EData>::printMatrix(std::ostream& os) const {
 };
 template <typename NData, typename EData>
 Edge<NData, EData>& Edges<NData,EData>::add(size_t id, size_t source, size_t target, EData data) {
-    if (exists(source, target))
-        throw ConflictingItemException("Attempting to add a new edge between a pair of nodes with identifiers "+ std::to_string(source) +" and "+ std::to_string(target) +" which already are connected with another existing edge");
-    if (source >= adjacency_matrix_.size() || target >= adjacency_matrix_.size())
-        throw NonexistingItemException("Attempting to add a new edge between a nonexisting pair of nodes with identifiers $source and " + std::to_string(target)+", only "+ std::to_string(adjacency_matrix_.size()) +" nodes are available");
+    if (id > size())
+        throw InvalidIdentifierException("Attempting to add a new edge with invalid identifier "+std::to_string(id)+", expected "+std::to_string(size())+" instead");
     if (exists(id))
         throw ConflictingItemException("Attempting to add a new edge with identifier "+ std::to_string(id) +" which already is associated with another existing edge");
-    if (id != size())
-        throw InvalidIdentifierException("Attempting to add a new edge with invalid identifier "+std::to_string(id)+", expected $size instead");
-    Edge<NData, EData> edge(id, &(nodes_->get(source)) , &(nodes_->get(target)), data);
+    if (source >= adjacency_matrix_.size() || target >= adjacency_matrix_.size())
+        throw NonexistingItemException("Attempting to add a new edge between a nonexisting pair of nodes with identifiers " + std::to_string(source)+" and "+std::to_string(target)+", only "+ std::to_string(adjacency_matrix_.size()) +" nodes are available");
+    if (exists(source, target))
+        throw ConflictingItemException("Attempting to add a new edge between a pair of nodes with identifiers "+ std::to_string(source) +" and "+ std::to_string(target) +" which already are connected with another existing edge");
+    Edge<NData, EData> edge(id, &(graph_->nodes().get(source)) , &(graph_->nodes().get(target)), data);
     try{
         edges_.push_back(edge);
     } catch (UnavailableMemoryException){
         throw UnavailableMemoryException("Unable to insert a new edge record into the underlying container of edges");
     }
     add_e_to_matrix(edge);
-    //if (oriented_)
-    //    adjacency_matrix_[target][source] = &edges_[edges_.size() - 1];
     return edges_[edges_.size() - 1];
 };
 template <typename NData, typename EData>
 Edge<NData, EData>& Edges<NData,EData>::add(size_t source, size_t target, EData data) {
     size_t id = edges_.size();
     return add(id,source,target,data);
-    //Edge<NData, EData> edge(id, &(nodes_->get(source)) , &(nodes_->get(target)), data);
-    //edges_.push_back(edge);
-    //auto ret = edges_[edges_.size() - 1];
-    //adjacency_matrix_[source][target] = &ret;
-    //return ret;
 };
 template <typename NData, typename EData>
 size_t Edges<NData,EData>::size() const {
@@ -299,13 +323,15 @@ bool Edges<NData,EData>::exists(size_t source, size_t target) const {
 template <typename NData, typename EData>
 Edge<NData, EData>& Edges<NData,EData>::get(size_t id) const {
     if (!exists(id)) 
-        throw NonexistingItemException("Attempting to access a nonexisting edge with identifier "+std::to_string(id)+", only "+std::to_string(adjacency_matrix_.size())+" edges are available"); 
+        throw NonexistingItemException("Attempting to access a nonexisting edge with identifier "+std::to_string(id)+", only "+std::to_string(size())+" edges are available"); 
     return edges_[id];
 };
 template <typename NData, typename EData>
 Edge<NData, EData>& Edges<NData,EData>::get(size_t source, size_t target) const {
     if (adjacency_matrix_.size() <= source || adjacency_matrix_.size() <= target)
         throw NonexistingItemException("Attempting to access an edge between a nonexisting pair of nodes with identifiers "+std::to_string(source)+" and "+std::to_string(target)+", only "+std::to_string(adjacency_matrix_.size())+" nodes are available"); 
+    if (!exists(source, target))
+        throw NonexistingItemException("Attempting to access a nonexisting edge between a pair of nodes with identifiers "+std::to_string(source)+" and "+std::to_string(target));; 
     size_t id = get_from_matrix(source, target);
     return edges_[id];
 };

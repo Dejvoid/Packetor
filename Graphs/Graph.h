@@ -3,15 +3,15 @@
 #define GRAPH_H_
 template <typename NData, typename EData>
 class Graph;
-#include "Node.h"
-#include "Edge.h"
-#include <fstream>
-#include <sstream>
 /// @brief 
 enum class Type{
     DIRECTED, UNDIRECTED
 };
-/// @brief 
+#include "Node.h"
+#include "Edge.h"
+#include <fstream>
+#include <sstream>
+/// @brief Abstract graph structure
 /// @tparam NData 
 /// @tparam EData 
 template <typename NData, typename EData>
@@ -20,17 +20,18 @@ protected:
     Nodes<NData, EData> nodes_;
     Edges<NData, EData> edges_;
 public:
-    Graph() : nodes_(&edges_), edges_(&nodes_) { };
+    Graph() : nodes_(&edges_), edges_(this) { };
     Graph(const Graph& other);
     Graph(Graph&& other) noexcept;
     ~Graph() = default;
     Graph& operator=(const Graph& other);
     Graph& operator=(Graph&& other) noexcept;
     /// @brief 
-    /// @return 
+    /// @return Nodes structure with graph associated nodes
     Nodes<NData, EData>& nodes();
+    const Nodes<NData, EData>& nodes() const;
     /// @brief 
-    /// @return 
+    /// @return Edges structure with graph associated edges
     Edges<NData, EData>& edges();
     /// @brief Serialize the graph content to stream
     /// @param os 
@@ -44,9 +45,11 @@ public:
     /// @brief Imports graph from filename
     /// @param filename 
     void import(const std::string& filename);
+    /// @brief Used to determine the type of the graph
+    /// @return 
     virtual Type type() const = 0;
 };
-/// @brief 
+/// @brief Undirected graph structure class
 /// @tparam NData 
 /// @tparam EData 
 template <typename NData, typename EData>
@@ -55,7 +58,7 @@ class UndirectedGraph : public Graph <NData, EData> {
     public:
     Type type() const override {return Type::UNDIRECTED; };
 };
-/// @brief 
+/// @brief Directed graph structure class
 /// @tparam NData 
 /// @tparam EData 
 template <typename NData, typename EData>
@@ -75,7 +78,7 @@ template <typename NData, typename EData>
 Graph<NData, EData>::Graph(const Graph& other) {
     this->nodes_ = other.nodes_;
     this->edges_ = other.edges_;
-    edges_.nodes_ = &nodes_;
+    edges_.graph_ = this;
     nodes_.edges_ = &edges_;
 };
 template <typename NData, typename EData>
@@ -83,7 +86,7 @@ Graph<NData, EData>::Graph(Graph&& other) noexcept {
     this->nodes_ = std::move(other.nodes_);
     this->edges_ = std::move(other.edges_);
     nodes_.edges_ = &edges_;
-    edges_.nodes_ = &nodes_;
+    edges_.graph_ = this;
 };
 template <typename NData, typename EData>
 Graph<NData, EData>& Graph<NData, EData>::operator=(const Graph& other) {
@@ -92,7 +95,7 @@ Graph<NData, EData>& Graph<NData, EData>::operator=(const Graph& other) {
     nodes_ = other.nodes_;
     edges_ = other.edges_;
     nodes_.edges_ = &edges_;
-    edges_.nodes_ = &nodes_;
+    edges_.graph_ = this;
     return *this;
 };
 template <typename NData, typename EData>
@@ -100,11 +103,15 @@ Graph<NData, EData>& Graph<NData, EData>::operator=(Graph&& other) noexcept {
     std::swap(this->nodes_, other.nodes_);
     std::swap(this->edges_, other.edges_);
     nodes_.edges_ = &edges_;
-    edges_.nodes_ = &nodes_;
+    edges_.graph_ = this;
     return *this;
 };
 template <typename NData, typename EData>
 Nodes<NData, EData>& Graph<NData, EData>::nodes() {
+    return nodes_;
+};
+template <typename NData, typename EData>
+const Nodes<NData, EData>& Graph<NData, EData>::nodes() const {
     return nodes_;
 };
 template <typename NData, typename EData>
@@ -119,11 +126,9 @@ void Graph<NData, EData>::print(std::ostream& os) const {
 template <typename NData, typename EData>
 void Graph<NData, EData>::print(const std::string& filename) const {
     std::ofstream ofs;
-    try {
     ofs.open(filename);
-    } catch (std::ofstream::failure&){
+    if (!ofs.good())
         throw FileProcessingException("Unable to open an output file " + filename);
-    }
     print(ofs);
     ofs.close();
 };
@@ -173,22 +178,11 @@ void Graph<NData, EData>::import(std::istream& is) {
 template <typename NData, typename EData>
 void Graph<NData, EData>::import(const std::string& filename) {
     std::ifstream ifs;
-    try {
-        ifs.open(filename);
-    }
-    catch (std::ifstream::failure&){
-        FileProcessingException("Unable to open an input file "+filename); 
-    }
+    ifs.open(filename);
+    if (!ifs.good())
+       throw FileProcessingException("Unable to open an input file "+filename); 
     import(ifs);
     ifs.close();
 };
-
-
-
-
-
-
-
-
 
 #endif

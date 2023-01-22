@@ -174,6 +174,7 @@ Array<T>::Array(const Array<T>& array) : block_size_(array.block_size_), element
     for (size_t i = 0; i < array.element_count_; ++i){
         data_[i / block_size_][i % block_size_] = array.data_[i / block_size_][i % block_size_]; 
     }
+    element_count_ = array.element_count_;
 };
 
 template <typename T>

@@ -32,16 +32,16 @@ public:
     /// @brief 
     /// @return 
     Edges<NData, EData>& edges();
-    /// @brief 
+    /// @brief Serialize the graph content to stream
     /// @param os 
     void print(std::ostream& os = std::cout) const;
-    /// @brief 
+    /// @brief Serialize the graph content to file
     /// @param filename 
     void print(const std::string& filename) const;
-    /// @brief 
+    /// @brief Imports graph from a give stream
     /// @param is 
     void import(std::istream& is = std::cin);
-    /// @brief 
+    /// @brief Imports graph from filename
     /// @param filename 
     void import(const std::string& filename);
     virtual Type type() const = 0;
@@ -87,8 +87,8 @@ Graph<NData, EData>::Graph(Graph&& other) noexcept {
 };
 template <typename NData, typename EData>
 Graph<NData, EData>& Graph<NData, EData>::operator=(const Graph& other) {
-    nodes_.~Nodes();
-    edges_.~Edges();
+    // nodes_.~Nodes();
+    // edges_.~Edges();
     nodes_ = other.nodes_;
     edges_ = other.edges_;
     nodes_.edges_ = &edges_;

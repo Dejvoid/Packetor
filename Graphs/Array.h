@@ -293,6 +293,7 @@ Array<T>& Array<T>::operator=(const Array<T>& array){
     }
     element_count_ = array.element_count_;*/
     data_.clear();
+    element_count_ = 0;
     block_size_ = array.block_size_;
     for (size_t i = 0; i < array.element_count_; i++) {
         push_back(array.data_[i / block_size_][i % block_size_]);

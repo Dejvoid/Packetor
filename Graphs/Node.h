@@ -147,7 +147,6 @@ Nodes<NData, EData>::Nodes(Nodes&& other) noexcept {
 };
 template <typename NData, typename EData>
 Nodes<NData,EData>& Nodes<NData, EData>::operator=(const Nodes& other) {
-    this->nodes_.~Array();
     this->nodes_ = other.nodes_;
     return *this;
 };

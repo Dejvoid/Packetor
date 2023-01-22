@@ -4,11 +4,13 @@
 
 #include <iostream>
 #include "Array.h"
+
 template <typename NData>
 class Node;
 template <typename NData, typename EData>
 class Nodes;
 #include "Edge.h"
+
 /// @brief Graph node representation class. Allows user to store custom information to Node
 /// @tparam NData 
 template <typename NData>
@@ -39,6 +41,7 @@ class Nodes {
     lib::Array<Node<NData>> nodes_;
     /// @brief Edge, used to fill adjacency matrix of the graph
     Edges<NData,EData>* edges_;
+    friend class Graph<NData, EData>;
     public:
     Nodes() = default;
     /// @brief 
@@ -47,7 +50,7 @@ class Nodes {
     /// @brief 
     /// @param other 
     Nodes(const Nodes& other);
-    /// @brief 
+    /// @brief After copy-ctor the nodes_ field becomes unusable and must be filled from Graph copy contructor -> don't use Nodes without Graph
     /// @param other 
     Nodes(Nodes&& other) noexcept;
     ~Nodes() = default;
@@ -134,16 +137,13 @@ size_t Node<NData>::getId() const {
     return id_;
 };
 
-
-
-
 template <typename NData, typename EData>
 Nodes<NData, EData>::Nodes(const Nodes& other) {
-
+    this->nodes_ = other.nodes_;
 };
 template <typename NData, typename EData>
 Nodes<NData, EData>::Nodes(Nodes&& other) noexcept {
-
+    std::swap(nodes_, other.nodes_);
 };
 template <typename NData, typename EData>
 Nodes<NData,EData>& Nodes<NData, EData>::operator=(const Nodes& other) {
@@ -175,10 +175,7 @@ Node<NData>& Nodes<NData, EData>::add(size_t id, NData data) {
         throw UnavailableMemoryException("Unable to insert a new node record into the underlying container of nodes");
     }
     try {
-        for (auto it = edges_->adjacency_matrix_.begin(); it != edges_->adjacency_matrix_.end(); ++it){
-            it->push_back((size_t)(-1));
-        }
-        edges_->adjacency_matrix_.push_back(std::vector<size_t>(id + 1, (size_t)(-1)));
+        edges_->add_n_to_matrix();
     } catch (const std::bad_alloc&) {
         nodes_.pop_back();
         throw UnavailableMemoryException("Unable to extend the underlying adjacency matrix container for edges");

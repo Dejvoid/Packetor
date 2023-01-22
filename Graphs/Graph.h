@@ -1,10 +1,12 @@
 /// @file Graph.h
 #ifndef GRAPH_H_
 #define GRAPH_H_
-
+template <typename NData, typename EData>
+class Graph;
 #include "Node.h"
 #include "Edge.h"
 #include <fstream>
+#include <sstream>
 /// @brief 
 enum class Type{
     DIRECTED, UNDIRECTED
@@ -64,28 +66,42 @@ class DirectedGraph : public Graph <NData, EData> {
 };
 
 template <typename NData, typename EData>
+std::ostream& operator<<(std::ostream& os, const Graph<NData, EData>& graph) {
+    graph.print(os);
+    return os;
+};
+
+template <typename NData, typename EData>
 Graph<NData, EData>::Graph(const Graph& other) {
-    this->nodes_.~Nodes();
-    this->edges_.~Edges();
     this->nodes_ = other.nodes_;
     this->edges_ = other.edges_;
+    edges_.nodes_ = &nodes_;
+    nodes_.edges_ = &edges_;
 };
 template <typename NData, typename EData>
 Graph<NData, EData>::Graph(Graph&& other) noexcept {
     this->nodes_ = std::move(other.nodes_);
     this->edges_ = std::move(other.edges_);
+    nodes_.edges_ = &edges_;
+    edges_.nodes_ = &nodes_;
 };
 template <typename NData, typename EData>
 Graph<NData, EData>& Graph<NData, EData>::operator=(const Graph& other) {
-    // nodes_.~Nodes();
-    // edges_.~Edges();
-    this->nodes_ = other.nodes_;
-    this->edges_ = other.edges_;
+    nodes_.~Nodes();
+    edges_.~Edges();
+    nodes_ = other.nodes_;
+    edges_ = other.edges_;
+    nodes_.edges_ = &edges_;
+    edges_.nodes_ = &nodes_;
+    return *this;
 };
 template <typename NData, typename EData>
 Graph<NData, EData>& Graph<NData, EData>::operator=(Graph&& other) noexcept {
     std::swap(this->nodes_, other.nodes_);
     std::swap(this->edges_, other.edges_);
+    nodes_.edges_ = &edges_;
+    edges_.nodes_ = &nodes_;
+    return *this;
 };
 template <typename NData, typename EData>
 Nodes<NData, EData>& Graph<NData, EData>::nodes() {
@@ -105,7 +121,7 @@ void Graph<NData, EData>::print(const std::string& filename) const {
     std::ofstream ofs;
     try {
     ofs.open(filename);
-    } catch (std::ofstream::failure){
+    } catch (std::ofstream::failure&){
         throw FileProcessingException("Unable to open an output file " + filename);
     }
     print(ofs);
@@ -113,38 +129,46 @@ void Graph<NData, EData>::print(const std::string& filename) const {
 };
 template <typename NData, typename EData>
 void Graph<NData, EData>::import(std::istream& is) {
-    std::string type;
-    while(is >> type){
-    if (type == "node") {
-        is.ignore(3, '(');
-        size_t id;
-        NData data;
-        is >> id;
-        char a = is.get();
-        is.ignore(3, '{');
-        is >> data;
-        std::cout << "id: "<< id << " data: " << data <<std::endl;
-        char b = is.get();
+    std::string line;
+    while (is.good()){
+        std::getline(is, line);
+        std::stringstream ss(line);
+        //ss << line;
+        std::string type;
+        std::getline(ss, type, ' ');
+        if (type == "node") {
+            ss.get(); // '('
+            size_t id;
+            ss >> id; // id
+            ss.get(); // ' '
+            ss.get(); // '{'
+            std::string temp;
+            std::getline(ss, temp, '}');
+            NData data;
+            std::stringstream(temp) >> data;
+            nodes_.add(id, data);
+        }
+        else if (type == "edge") {
+            ss.get(); // '('
+            size_t source;
+            ss >> source;
+            ss.get(); // ')'
+            ss.get(); // '-'
+            ss.get(); // '['
+            size_t id;
+            ss >> id;
+            ss.get(); // ' '
+            ss.get(); // '{'
+            std::string temp;
+            std::getline(ss, temp, '}');
+            EData data;
+            std::stringstream(temp) >> data;
+            std::getline(ss, temp, '('); // "]->("
+            size_t target;
+            ss >> target;
+            edges_.add(source, target, data);
+        }
     }
-    else if (type == "edge") {
-        is.ignore(3, '(');
-        size_t source;
-        is >> source;
-        is.ignore(3, '[');
-        size_t id;
-        is >> id;
-        is.ignore(3, '{');
-        EData data;
-        is >> data;
-        is.ignore(6, '(');
-        size_t target;
-        is >> target;
-        std::cout << "id: "<< id << " data: " << data << " source:  "<< source << " target: "<< target <<std::endl;
-        char b = is.get();
-    }
-    }
-    //std::cout << type << std::endl;
-    
 };
 template <typename NData, typename EData>
 void Graph<NData, EData>::import(const std::string& filename) {
@@ -152,8 +176,8 @@ void Graph<NData, EData>::import(const std::string& filename) {
     try {
         ifs.open(filename);
     }
-    catch (std::ifstream::failure){
-        FileProcessingException("Unable to open an input file $filename"); 
+    catch (std::ifstream::failure&){
+        FileProcessingException("Unable to open an input file "+filename); 
     }
     import(ifs);
     ifs.close();

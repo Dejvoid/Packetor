@@ -275,7 +275,7 @@ T& Array<T>::operator[](size_t index) const{
 template<typename T>
 Array<T>& Array<T>::operator=(const Array<T>& array){
     // Copy assignment
-    block_size_ = array.block_size_;
+    /*block_size_ = array.block_size_;
     for (size_t i = 0; i < element_count_; i++) {
         data_[i / block_size_][i % block_size_].~T(); 
     }
@@ -291,7 +291,12 @@ Array<T>& Array<T>::operator=(const Array<T>& array){
             push_back(array.data_[i / block_size_][i % block_size_]); 
         }
     }
-    element_count_ = array.element_count_;
+    element_count_ = array.element_count_;*/
+    data_.clear();
+    block_size_ = array.block_size_;
+    for (size_t i = 0; i < array.element_count_; i++) {
+        push_back(array.data_[i / block_size_][i % block_size_]);
+    }
     return *this;
 }; 
 

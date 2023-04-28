@@ -120,6 +120,8 @@ int main (int argc, char** argv){
 
     NetScanner ns{device};
     ns.scan_mac_passive();
+    ns.scan_ipv4_passive();
+    ns.scan_ipv6_passive();
     int a;
     std::cin >> a;
     PcapLiveDevice::DeviceConfiguration config;

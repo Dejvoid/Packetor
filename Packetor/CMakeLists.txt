@@ -5,9 +5,15 @@ include(CTest)
 enable_testing()
 
 include_directories(${PROJECT_SOURCE_DIR}/lib/header)
+include_directories(${PROJECT_SOURCE_DIR}/include)
 link_directories(${PROJECT_SOURCE_DIR}/lib)
 
-add_executable(Packetor src/main.cpp)
+file(GLOB SOURCES
+${PROJECT_SOURCE_DIR}/include/*.h
+    ${PROJECT_SOURCE_DIR}/src/*.cpp
+)
+
+add_executable(Packetor src/main.cpp ${SOURCES})
 
 set(CMAKE_CXX_FLAGS "-O2 -g -Wall")
 

@@ -4,6 +4,8 @@
 #include <PcapFileDevice.h>
 #include <PcapLiveDeviceList.h>
 
+#include "net_scanner.hpp"
+
 using namespace pcpp;
 
 struct PacketStats
@@ -75,11 +77,13 @@ void list_devices() {
     auto device_list = PcapLiveDeviceList::getInstance().getPcapLiveDevicesList();
     for (auto it = device_list.begin(); it!=device_list.end(); ++it) {
         auto device = *it;
-        std::cout << device->getName() << std::endl;
-        std::cout << "Address (ipv4): " << device->getIPv4Address() << " (ipv6): " << device->getIPv6Address() << std::endl;
-        std::cout << "MAC: " << device->getMacAddress() << std::endl;
-        //std::cout << "DNS: " << device->getDnsServers() << std::endl;
-        std::cout << std::endl;
+        if (device->getMacAddress() != MacAddress::Zero) {
+            std::cout << device->getName() << std::endl;
+            std::cout << "Address (ipv4): " << device->getIPv4Address() << " (ipv6): " << device->getIPv6Address() << std::endl;
+            std::cout << "MAC: " << device->getMacAddress() << std::endl;
+            //std::cout << "DNS: " << device->getDnsServers() << std::endl;
+            std::cout << std::endl;
+        }
     }
 }
 
@@ -111,9 +115,13 @@ int main (int argc, char** argv){
     //}
     // list interfaces: 
 
-
     list_devices();
     auto device = PcapLiveDeviceList::getInstance().getPcapLiveDevicesList()[0];
+
+    NetScanner ns{device};
+    ns.scan_mac_passive();
+    int a;
+    std::cin >> a;
     PcapLiveDevice::DeviceConfiguration config;
     config.direction = PcapLiveDevice::PcapDirection::PCPP_IN;
     config.mode = PcapLiveDevice::DeviceMode::Promiscuous;

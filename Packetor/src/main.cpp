@@ -34,8 +34,12 @@ struct PacketStats
     {
         if (packet.isPacketOfType(pcpp::Ethernet))
             ethPacketCount++;
-        if (packet.isPacketOfType(pcpp::IPv4))
+        if (packet.isPacketOfType(pcpp::IPv4)) {
             ipv4PacketCount++;
+            std::cout << "Captured ipv4 packet: ";
+            auto ipv4_info = packet.getLayerOfType<IPv4Layer>();
+            std::cout << "Source: " << ipv4_info->getSrcIPAddress() << " Destination: " << ipv4_info->getDstIPAddress() << std::endl;
+        }
         if (packet.isPacketOfType(pcpp::IPv6))
             ipv6PacketCount++;
         if (packet.isPacketOfType(pcpp::TCP))
@@ -106,6 +110,8 @@ int main (int argc, char** argv){
     //    return 1;
     //}
     // list interfaces: 
+
+
     list_devices();
     auto device = PcapLiveDeviceList::getInstance().getPcapLiveDevicesList()[0];
     PcapLiveDevice::DeviceConfiguration config;
@@ -117,7 +123,6 @@ int main (int argc, char** argv){
     if (device->open()) {
         PacketStats stats;
         device->startCaptureBlockingMode(onPacketArrivesBlockingMode, &stats, 10);
-        
         std::cout << "Results:" << std::endl;
         stats.printToConsole();
     }

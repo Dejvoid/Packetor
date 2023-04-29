@@ -42,6 +42,24 @@ static bool on_packet_arrival_ipv6(pcpp::RawPacket* packet, pcpp::PcapLiveDevice
     return false;
 }
 
+void PacketStats::consumePacket(const Packet& packet){
+        if (packet.isPacketOfType(pcpp::Ethernet))
+            eth_count++;
+        if (packet.isPacketOfType(pcpp::IPv4))
+            ipv4_count++;
+        if (packet.isPacketOfType(pcpp::IPv6))
+            ipv6_count++;
+        if (packet.isPacketOfType(pcpp::TCP))
+            tcp_count++;
+        if (packet.isPacketOfType(pcpp::UDP))
+            udp_count++;
+        if (packet.isPacketOfType(pcpp::DNS))
+            dns_count++;
+        if (packet.isPacketOfType(pcpp::HTTP))
+            http_count++;
+        if (packet.isPacketOfType(pcpp::SSL))
+            ssl_count++;
+    }
 
 NetScanner::NetScanner(PcapLiveDevice* device) : interface_(device) {
 }
@@ -58,7 +76,6 @@ void NetScanner::scan_mac_passive(int wait_time) {
     for (auto it = mac_devs_.begin(); it != mac_devs_.end(); ++it) {
         std::cout << (*it) << std::endl;
     }
-    std::cout << std::endl;
 }
 
 void NetScanner::scan_ipv4_passive(int wait_time) {
@@ -73,7 +90,6 @@ void NetScanner::scan_ipv4_passive(int wait_time) {
     for (auto it = ipv4_devs_.begin(); it != ipv4_devs_.end(); ++it) {
         std::cout << (*it) << std::endl;
     }
-    std::cout << std::endl;
 }
 
 void NetScanner::scan_ipv6_passive(int wait_time) {
@@ -88,5 +104,4 @@ void NetScanner::scan_ipv6_passive(int wait_time) {
     for (auto it = ipv6_devs_.begin(); it != ipv6_devs_.end(); ++it) {
         std::cout << (*it) << std::endl;
     }
-    std::cout << std::endl;
 }

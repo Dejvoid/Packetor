@@ -8,9 +8,9 @@ class PacketSender {
     PcapLiveDevice* device_;
     public:
     PacketSender(PcapLiveDevice* device) : device_(device) {};
-    void send_packet() {
-        pcpp::EthLayer newEthernetLayer(pcpp::MacAddress("01:23:45:67:89:ab"), pcpp::MacAddress("aa:bb:cc:dd:ee:ff"));
-        pcpp::IPv4Layer newIPLayer(pcpp::IPv4Address("11.12.13.14"), pcpp::IPv4Address("14.13.12.11"));
+    void send_packet(const MacAddress& src_mac, const MacAddress& dest_mac, const IPv4Address& src_ip, const IPv4Address& dest_ip) {
+        pcpp::EthLayer newEthernetLayer(src_mac, dest_mac);
+        pcpp::IPv4Layer newIPLayer(src_ip, dest_ip);
         newIPLayer.getIPv4Header()->ipId = 10;
         newIPLayer.getIPv4Header()->timeToLive = 64;
         pcpp::UdpLayer newUdpLayer(12345, 53);

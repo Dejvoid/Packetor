@@ -18,14 +18,24 @@ struct hash<MacAddress> {
 };
 }
 
-//namespace std {
-//template <>
-//struct hash<IPv4Address> {
-//  size_t operator()(const IPv4Address &addr) const {
-//    return hash<const uint8_t*>()(addr.);
-//  }
-//};
-//}
+struct PacketStats
+{
+    int eth_count = 0;
+    int ipv4_count = 0;
+    int ipv6_count = 0;
+    int tcp_count = 0;
+    int udp_count = 0;
+    int dns_count = 0;
+    int http_count = 0;
+    int ssl_count = 0;
+
+    void consumePacket(const Packet& packet);
+
+    /**
+    * Print stats to console
+    */
+    void printToConsole();
+};
 
 class NetScanner {
     private:

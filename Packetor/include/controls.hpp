@@ -5,10 +5,13 @@
 #include <PcapLiveDeviceList.h>
 #include <iostream>
 
+#include "net_scanner.hpp"
+
 using namespace pcpp;
 
 class UserControl {
     std::vector<PcapLiveDevice*> dev_list_ = PcapLiveDeviceList::getInstance().getPcapLiveDevicesList();
+    NetScanner net_scanner_;
     public:
     void main_loop();
     void help();

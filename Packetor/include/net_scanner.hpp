@@ -38,16 +38,13 @@ struct PacketStats
 };
 
 class NetScanner {
-    private:
     set<IPv4Address> ipv4_devs_;
     set<IPv6Address> ipv6_devs_;
     unordered_set<MacAddress> mac_devs_;
-    PcapLiveDevice* interface_;
     public:
-    NetScanner(PcapLiveDevice* device);
-    void scan_mac_passive(int wait_time = 5);
-    void scan_ipv4_passive(int wait_time = 5);
-    void scan_ipv6_passive(int wait_time = 5);
+    void scan_mac_passive(PcapLiveDevice* device, int wait_time = 5);
+    void scan_ipv4_passive(PcapLiveDevice* device, int wait_time = 5);
+    void scan_ipv6_passive(PcapLiveDevice* device, int wait_time = 5);
 };
 
 #endif 

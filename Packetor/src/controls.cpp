@@ -65,36 +65,34 @@ void UserControl::list_devs() {
 void UserControl::mac_scan() {
     list_devs();
     std::cout << "> Select device: ";
-    int dev_index = 0;
+    size_t dev_index = 0;
     std::cin >> dev_index;
     bool passive = true;
     if (passive) {
-        NetScanner ns {dev_list_[dev_index]};
         std::cout << "> Select how long: ";
         int wait_time = 5;
         std::cin >> wait_time;
-        ns.scan_mac_passive(wait_time);
+        net_scanner_.scan_mac_passive(dev_list_[dev_index],wait_time);
     }
 }
 
 void UserControl::ip_scan() {
     list_devs();
     std::cout << "> Select device: ";
-    int dev_index = 0;
+    size_t dev_index = 0;
     std::cin >> dev_index;
     std::cout << "> Select version (4 or 6): ";
     int version = 4;
     std::cin >> version;
     bool passive = true;
     if (passive) {
-        NetScanner ns {dev_list_[dev_index]};
         std::cout << "> Select how long: ";
         int wait_time = 5;
         std::cin >> wait_time;
         if (version == 4)
-            ns.scan_ipv4_passive(wait_time);
+            net_scanner_.scan_ipv4_passive(dev_list_[dev_index],wait_time);
         else if (version == 6) 
-            ns.scan_ipv6_passive(wait_time);
+            net_scanner_.scan_ipv6_passive(dev_list_[dev_index],wait_time);
         else 
             std::cout << "Wrong input" << std::endl;
         //else {
@@ -122,7 +120,7 @@ bool UserControl::read_mac(MacAddress& mac, std::istream& is) {
 void UserControl::send() {
     list_devs();
     std::cout << "> Select device: ";
-    int dev_index = 0;
+    size_t dev_index = 0;
     std::cin >> dev_index;
     if (dev_index <0 || dev_index >= dev_list_.size()) {
         std::cout << "Wrong device index" << std::endl;
@@ -140,14 +138,25 @@ void UserControl::send() {
     std::cout << "> Enter destination MAC ('none' if use zeros): ";
     if (!read_mac(dst_mac))
         return;
+    std::cout << "> How many packets to send?: ";
+    unsigned int packet_count = 1;
+    std::cin >> packet_count;
     Packet newPacket;
-    EthLayer layer{src_mac,dst_mac};
+    std::cout << "> Ethernet type (HEX)? (" << hex << "0x" << PCPP_ETHERTYPE_ARP << "-ARP, "
+                                    << "0x" << PCPP_ETHERTYPE_IP << "-IP, "
+                                    << "0x" << PCPP_ETHERTYPE_IPV6 << "-IPv6, "
+                                    << "0x" << PCPP_ETHERTYPE_VLAN << "-Vlan, "
+                                    << "0x" << PCPP_ETHERTYPE_WAKE_ON_LAN << "-WakeOnLan and more...) ";
+    uint16_t eth_type;
+    std::cin >> hex >>eth_type;
+    EthLayer layer{src_mac,dst_mac, eth_type};
     newPacket.addLayer(&layer);
 
     if (device->open()) {
         // std::cout << "Attempting to send packet" << std::endl;
-        device->sendPacket(&newPacket);
-        std::cout << "Packet sent " << src_mac << " " << dst_mac << std::endl;
+        for (;packet_count !=0; --packet_count)
+            device->sendPacket(&newPacket);
+        std::cout << "Packets sent " << src_mac << " " << dst_mac << std::endl;
     }
     else 
         std::cout << "ERROR" << std::endl;

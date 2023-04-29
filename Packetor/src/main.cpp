@@ -38,23 +38,11 @@ int main (int argc, char** argv){
     } 
 
     auto device = PcapLiveDeviceList::getInstance().getPcapLiveDevicesList()[1];
-
-    NetScanner ns{device};
-    ns.scan_mac_passive();
-    ns.scan_ipv4_passive();
-    ns.scan_ipv6_passive();
     int a;
     PacketSender ps{device};
     //ps.send_packet();
     ps.wifi_deauth();
 
-    std::cin >> a;
-    PcapLiveDevice::DeviceConfiguration config;
-    config.direction = PcapLiveDevice::PcapDirection::PCPP_IN;
-    config.mode = PcapLiveDevice::DeviceMode::Promiscuous;
-    config.packetBufferSize = 10;
-    //device->open(config);
-    
     if (device->open()) {
         PacketStats stats;
         device->startCaptureBlockingMode(onPacketArrivesBlockingMode, &stats, 10);

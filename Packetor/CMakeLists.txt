@@ -9,7 +9,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 link_directories(${PROJECT_SOURCE_DIR}/lib)
 
 file(GLOB SOURCES
-${PROJECT_SOURCE_DIR}/include/*.h
+${PROJECT_SOURCE_DIR}/include/*.hpp
     ${PROJECT_SOURCE_DIR}/src/*.cpp
 )
 

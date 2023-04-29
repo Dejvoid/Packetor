@@ -19,6 +19,8 @@ class UserControl {
     void mac_scan();
     void ip_scan();
     void send();
+    void save_packet_file(const std::string& file, const Packet& packet);
+    Packet load_packet_file(const std::string& file);
     private:
     bool read_mac(MacAddress& mac, std::istream& is = std::cin);
 };

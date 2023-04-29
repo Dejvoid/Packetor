@@ -37,7 +37,7 @@ void UserControl::main_loop() {
 
 void UserControl::help() {
     std::cout << "Help for Packetor: " << std::endl;
-    std::cout << "In interactive mode: " << std::endl;
+    //std::cout << "In interactive mode: " << std::endl;
 
     std::cout << "'help'" << " to show this help" << std::endl;
     std::cout << "'list'" << " to list interfaces" << std::endl;
@@ -160,4 +160,20 @@ void UserControl::send() {
     }
     else 
         std::cout << "ERROR" << std::endl;
+}
+
+void UserControl::save_packet_file(const std::string& filename, const Packet& packet) {
+    ofstream ofs;
+    ofs.open(filename);
+    if (ofs.is_open()) {
+        ofs << packet;
+        ofs.close();
+    }
+    else 
+        std::cout << "Error with file " << filename << std::endl;
+}
+
+Packet UserControl::load_packet_file(const std::string& filename) {
+    Packet p;
+    return p;
 }

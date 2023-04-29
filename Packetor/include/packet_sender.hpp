@@ -27,6 +27,7 @@ class PacketSender {
         else 
             std::cout << "ERROR" << std::endl;
     };
+    
     void wifi_deauth() {
         uint8_t deauthPacket[26] = {
         /*  0 - 1  */ 0xC0, 0x00,                         // type, subtype c0: deauth (a0: disassociate)

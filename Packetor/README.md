@@ -14,10 +14,15 @@ This project is my final assignment for C++ programming course at MFF UK. Idea w
 Program has simple interactive console interface where you enter commands: 
 
 - `help` - shows program help
-- `list` - lists local interfaces
+- `dev_list` - lists local interfaces
 - `mac_scan` - passive network MAC scan
+- `mac_list` - lists discovered MAC addresses
 - `ip_scan` - passive network IP scan (IPv4 or IPv6)
+- `ip4_list` - list discovered IPv4 addresses
+- `ip6_list` - list discovered IPv6 addresses
 - `send` - send custom packet (interactively created or file templated)
+- `stats` - shows statistics of all performed scans
+- `save_stats` - saves stats to file
 - `exit` - exits the program
 
 ## Technical information 

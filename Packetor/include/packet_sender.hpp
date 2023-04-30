@@ -4,11 +4,18 @@
 #include <EthLayer.h>
 #include <UdpLayer.h>
 
+/// @brief Class for sending packets over the device_ field
 class PacketSender {
+    /// @brief Device for sending
     PcapLiveDevice* device_;
     public:
+    /// @brief Constructor - device must be valid
+    /// @param device PcapLiveDevice* to be used for sending
     PacketSender(PcapLiveDevice* device) : device_(device) {};
-    void send_packet(Packet* packet, int count = 1) {
+    /// @brief Simple packet sending
+    /// @param packet packet to be send
+    /// @param count (default=1) number of packets to be sent
+    void send_packet(Packet* packet, unsigned int count = 1) {
         //pcpp::EthLayer newEthernetLayer(src_mac, dest_mac);
         //pcpp::IPv4Layer newIPLayer(src_ip, dest_ip);
         //newIPLayer.getIPv4Header()->ipId = 10;
@@ -27,7 +34,7 @@ class PacketSender {
         else 
             std::cout << "ERROR" << std::endl;
     };
-    
+    /// @brief 
     void wifi_deauth() {
         uint8_t deauthPacket[26] = {
         /*  0 - 1  */ 0xC0, 0x00,                         // type, subtype c0: deauth (a0: disassociate)

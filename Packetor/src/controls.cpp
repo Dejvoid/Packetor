@@ -187,75 +187,98 @@ bool UserControl::read_ip6(IPv6Address& ip, std::istream& is) {
     return true;
 }
 
-void UserControl::send() {
-    list_devs();
+bool UserControl::select_device(PcapLiveDevice** device) {
     std::cout << "> Select device: ";
     size_t dev_index = 0;
     std::cin >> dev_index;
     if (dev_index <0 || dev_index >= dev_list_.size()) {
         std::cout << "Wrong device index" << std::endl;
-        return;
+        return false;
     }
-    auto device = dev_list_[dev_index];
-    PacketSender ps{device};
+    *device = dev_list_[dev_index];
+    return true;
+}
 
-
-    
-    MacAddress src_mac;
-    MacAddress dst_mac;
+bool UserControl::fill_eth_layer(const PcapLiveDevice* device, MacAddress& src_mac, MacAddress& dst_mac, uint16_t& eth_type) {
     std::cout << "> Enter source MAC ('none' if use interface MAC): ";
     if (!read_mac(src_mac))
-        return;
-    if (src_mac == MacAddress::Zero)
+        return false;
+    if (src_mac == MacAddress::Zero) {
         src_mac = device->getMacAddress();
+    }
     std::cout << "> Enter destination MAC ('none' if use zeros): ";
     if (!read_mac(dst_mac))
-        return;
-    std::cout << "> How many packets to send?: ";
-    unsigned int packet_count = 1;
-    std::cin >> packet_count;
-    Packet newPacket;
+        return false;
     std::cout << "> Ethernet type (HEX)? (" << hex << "0x" << PCPP_ETHERTYPE_ARP << "-ARP, "
                                     << "0x" << PCPP_ETHERTYPE_IP << "-IP, "
                                     << "0x" << PCPP_ETHERTYPE_IPV6 << "-IPv6, "
                                     << "0x" << PCPP_ETHERTYPE_VLAN << "-Vlan, "
                                     << "0x" << PCPP_ETHERTYPE_WAKE_ON_LAN << "-WakeOnLan and more...) ";
+    std::cin >> hex >> eth_type;
+    return true;
+}
+
+bool UserControl::fill_ip4_layer(const PcapLiveDevice* device, IPv4Address& src_ip, IPv4Address& dst_ip) {
+    std::cout << "> Enter source address: ('none' if use interface MAC) ";
+    if(!read_ip4(src_ip))
+        return false;
+    if (src_ip == IPv4Address::Zero)
+        src_ip = device->getIPv4Address();
+    std::cout << "> Enter destination address: ('none' for zero) ";
+    if(!read_ip4(dst_ip))
+        return false;
+    return true;
+}
+
+bool UserControl::fill_ip6_layer(const PcapLiveDevice* device, IPv6Address& src_ip, IPv6Address& dst_ip) {
+    std::cout << "> Enter source address: ('none' if use interface MAC) ";
+    if(!read_ip6(src_ip))
+        return false;
+    if (src_ip == IPv6Address::Zero)
+        src_ip = device->getIPv6Address();
+    std::cout << "> Enter destination address: ('none' for zero) ";
+    if(!read_ip6(dst_ip))
+        return false;
+    return true;
+}
+
+void UserControl::send() {
+    list_devs();
+    PcapLiveDevice* device;
+    if (!select_device(&device))
+        return;
+    PacketSender ps{device};    
+    Packet newPacket;
+    MacAddress src_mac,dst_mac;
     uint16_t eth_type;
-    std::cin >> hex >>eth_type;
-    EthLayer layer{src_mac,dst_mac, eth_type};
-    layer.computeCalculateFields();
-    newPacket.addLayer(&layer);
+    if (!fill_eth_layer(device, src_mac,dst_mac, eth_type))
+        return;
+    auto eth_layer = EthLayer{src_mac,dst_mac, eth_type};
+    eth_layer.computeCalculateFields();
+    newPacket.addLayer(&eth_layer);
     std::cout << "> Add IP layer [4/6/n]? ";
     char ip_l;
     std::cin >> ip_l;
     if (ip_l == '4') {
         IPv4Address src_ip;
-        std::cout << "> Enter source address: ";
-        if(!read_ip4(src_ip))
-            return;
         IPv4Address dst_ip;
-        std::cout << "> Enter destination address: ";
-        if(!read_ip4(dst_ip))
-            return;
+        fill_ip4_layer(device, src_ip,dst_ip);
         IPv4Layer ip_layer{src_ip, dst_ip};
         ip_layer.computeCalculateFields();
         newPacket.addLayer(&ip_layer);
     }
     else if (ip_l == '6') {
         IPv6Address src_ip;
-        std::cout << "> Enter source address: ";
-        if(!read_ip6(src_ip))
-            return;
         IPv6Address dst_ip;
-        std::cout << "> Enter destination address: ";
-        if(!read_ip6(dst_ip))
-            return;
+        fill_ip6_layer(device, src_ip, dst_ip);
         IPv6Layer ip_layer{src_ip, dst_ip};
         ip_layer.computeCalculateFields();
         newPacket.addLayer(&ip_layer);
     }
 
-
+    std::cout << "> How many packets to send?: ";
+    unsigned int packet_count = 1;
+    std::cin >> packet_count;
     ps.send_packet(&newPacket, packet_count);
     std::cout << "> Save packet template [y/n]? ";
     char save;

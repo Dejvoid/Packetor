@@ -4,6 +4,8 @@
 #include <vector>
 #include <PcapLiveDeviceList.h>
 #include <iostream>
+#include <TcpLayer.h>
+#include <UdpLayer.h>
 
 #include "net_scanner.hpp"
 
@@ -16,6 +18,8 @@ constexpr std::string_view SEND = "send";
 constexpr std::string_view IP_SCAN = "ip_scan";
 constexpr std::string_view IP4_LIST = "ip4_list";
 constexpr std::string_view IP6_LIST = "ip6_list";
+constexpr std::string_view SHOW_STATS = "stats";
+constexpr std::string_view SAVE_STATS = "save_stats";
 constexpr std::string_view EXIT = "exit";
 
 /// @brief Class responsible for user interface (mostly interactive mode)
@@ -51,6 +55,10 @@ class UserControl {
     /// @param file filename for loading the packet
     /// @return loaded packet
     Packet load_packet_file(const std::string& file);
+    /// @brief User interface for printing stats
+    void print_stats();
+    /// @brief User interface for saving stats
+    void save_stats();
     private:
     /// @brief Interface for reading MAC from user (user input == "none" is correct usage and returns MacAddress::Zero)
     /// @param mac out MAC address
@@ -90,6 +98,15 @@ class UserControl {
     /// @param dst_ip Destination address
     /// @return false if there was error
     bool fill_ip6_layer(const PcapLiveDevice* device, IPv6Address& src_ip, IPv6Address& dst_ip);
+    /// @brief Fills TCP layer for packet with user data
+    /// @param tcp_layer object to be filled
+    /// @return success
+    bool fill_tcp_layer(TcpLayer& tcp_layer);
+    /// @brief Fills UPD layer for packet with user data
+    /// @param src_port Source port
+    /// @param dst_port Destination port
+    /// @return success
+    bool fill_udp_layer(uint16_t& src_port, uint16_t& dst_port);
 };
 
 #endif

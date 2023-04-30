@@ -16,16 +16,6 @@ class PacketSender {
     /// @param packet packet to be send
     /// @param count (default=1) number of packets to be sent
     void send_packet(Packet* packet, unsigned int count = 1) {
-        //pcpp::EthLayer newEthernetLayer(src_mac, dest_mac);
-        //pcpp::IPv4Layer newIPLayer(src_ip, dest_ip);
-        //newIPLayer.getIPv4Header()->ipId = 10;
-        //newIPLayer.getIPv4Header()->timeToLive = 64;
-        //pcpp::UdpLayer newUdpLayer(12345, 53);
-        //pcpp::Packet newPacket(100);
-        //newPacket.addLayer(&newEthernetLayer);
-        //newPacket.addLayer(&newIPLayer);
-        //newPacket.addLayer(&newUdpLayer);
-        //newPacket.computeCalculateFields();
         if (device_->open()) {
             for (;count !=0; --count)
                 device_->sendPacket(packet);

@@ -6,7 +6,6 @@
 
 #include "net_scanner.hpp"
 #include "packet_sender.hpp"
-#include "arguments.hpp"
 #include "controls.hpp"
 
 

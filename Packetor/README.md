@@ -23,3 +23,7 @@ Program has simple interactive console interface where you enter commands:
 ## Technical information 
 
 Project is developed in C++ with [Pcap++ library](https://pcapplusplus.github.io/).
+
+## Compilation
+
+Use `cmake` to compile. Compiled Pcap++ library sources and headers are required in `lib` directory. Recommended structure is described in `lib/README.md` 

@@ -5,6 +5,7 @@
 #include <set>
 #include <IPv4Layer.h>
 #include <PcapLiveDevice.h>
+#include <iostream>
 
 using namespace std;
 using namespace pcpp;
@@ -29,23 +30,20 @@ struct Stats {
     int dns_count = 0;
     int http_count = 0;
     int ssl_count = 0;
-
-
+    /// @brief Discovered IPv4 addresses
+    set<IPv4Address> ipv4_devs;
+    /// @brief Discovered IPv6 addresses
+    set<IPv6Address> ipv6_devs;
+    /// @brief Discovered MAC addresses
+    unordered_set<MacAddress> mac_devs;
     /// @brief Add packet to stats
     /// @param packet 
     void consumePacket(const Packet& packet);
-
-    void printToConsole();
 };
 
 /// @brief Class for scanning network
 class NetScanner {
-    /// @brief Discovered IPv4 addresses
-    set<IPv4Address> ipv4_devs_;
-    /// @brief Discovered IPv6 addresses
-    set<IPv6Address> ipv6_devs_;
-    /// @brief Discovered MAC addresses
-    unordered_set<MacAddress> mac_devs_;
+    Stats stats_;
     public:
     /// @brief Passive scan of MAC addresses communicating on the netowrk
     /// @param device Device where scan is performed
@@ -61,13 +59,23 @@ class NetScanner {
     void scan_ipv6_passive(PcapLiveDevice* device, int wait_time = 5);
     /// @brief Readonly getter for ipv4_devs_ field
     /// @return Const reference to the field
-    const set<IPv4Address>& get_ipv4() const {return ipv4_devs_;};
+    const set<IPv4Address>& get_ipv4() const {return stats_.ipv4_devs;};
     /// @brief Readonly getter for ipv6_devs_ field
     /// @return Const reference to the field
-    const set<IPv6Address>& get_ipv6() const {return ipv6_devs_;};
+    const set<IPv6Address>& get_ipv6() const {return stats_.ipv6_devs;};
     /// @brief Readonly getter for mac_devs_ field
     /// @return Const reference to the field
-    const unordered_set<MacAddress>& get_mac() const {return mac_devs_;};
+    const unordered_set<MacAddress>& get_mac() const {return stats_.mac_devs;};
+    /// @brief Readonly getter for all stats
+    /// @return Const reference to stats field
+    const Stats& get_stats() const {return stats_;};
+    /// @brief Prints stats in human-readable format
+    /// @param os output stream
+    void print_stats(std::ostream& os = std::cout) const;
+    void print_ipv6(std::ostream& os = std::cout) const;
+    void print_ipv4(std::ostream& os = std::cout) const;
+    void print_mac(std::ostream& os = std::cout) const;
+    void print_packets(std::ostream& os = std::cout) const;
 };
 
 #endif 

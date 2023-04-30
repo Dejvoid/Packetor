@@ -4,6 +4,8 @@
 #include <PcapLiveDeviceList.h>
 #include <PcapFileDevice.h>
 #include <IPv6Layer.h>
+#include <TcpLayer.h>
+#include <UdpLayer.h>
 
 #include "net_scanner.hpp"
 #include "packet_sender.hpp"
@@ -32,6 +34,10 @@ void UserControl::main_loop() {
             list_ipv4();
         } else if (cmd == IP6_LIST) {
             list_ipv6();
+        } else if (cmd ==SHOW_STATS){
+            print_stats();
+        } else if (cmd== SAVE_STATS) {
+            save_stats();
         }
         else if (cmd == EXIT) {
             return;
@@ -54,6 +60,8 @@ void UserControl::help() {
     std::cout << "'" << IP4_LIST << "'" << " to list IPv4 addresses" << std::endl;
     std::cout << "'" << IP6_LIST << "'" << " to list IPv6 addresses" << std::endl;
     std::cout << "'" << SEND <<"'" << " to send custom packets" << std::endl;
+    std::cout << "'" << SHOW_STATS <<"'" << "to show statistics of all scans" << std::endl;
+    std::cout << "'" << SAVE_STATS <<"'" << "to save statistics of all scans to file" << std::endl;
     std::cout << "'" << EXIT << "'" << " to exit" << std::endl;
 }
 
@@ -73,33 +81,15 @@ void UserControl::list_devs() {
 }
 
 void UserControl::list_mac() {
-    auto macs = net_scanner_.get_mac();
-    std::cout << "Discovered MAC addresses: " << std::endl;
-    int i = 0;
-    for (auto it = macs.begin(); it != macs.end(); ++it) {
-        auto m = *it;
-        std::cout << "[" << i++ << "] " << m << std::endl;
-    }
+    net_scanner_.print_mac();
 }
 
 void UserControl::list_ipv4() {
-    auto ips = net_scanner_.get_ipv4();
-    std::cout << "Discovered IPv4 addresses: " << std::endl;
-    int i = 0;
-    for (auto it = ips.begin(); it != ips.end(); ++it) {
-        auto ip = *it;
-        std::cout << "[" << i++ << "] " << ip << std::endl;
-    }
+    net_scanner_.print_ipv4();
 }
 
 void UserControl::list_ipv6() {
-    auto ips = net_scanner_.get_ipv6();
-    std::cout << "Discovered IPv6 addresses: " << std::endl;
-    int i = 0;
-    for (auto it = ips.begin(); it != ips.end(); ++it) {
-        auto ip = *it;
-        std::cout << "[" << i++ << "] " << ip << std::endl;
-    }
+    net_scanner_.print_ipv6();
 }
 
 void UserControl::mac_scan() {
@@ -242,13 +232,35 @@ bool UserControl::fill_ip6_layer(const PcapLiveDevice* device, IPv6Address& src_
     return true;
 }
 
+bool UserControl::fill_tcp_layer(TcpLayer& tcp_layer) {
+    std::cout << "> Enter TCP source port number: ";
+    uint16_t src_port;
+    uint16_t dst_port;
+    std::cin >> src_port;
+    std::cout << "> Enter TCP destination port number: ";
+    std::cin >> dst_port;
+    tcp_layer = TcpLayer{src_port, dst_port};
+    tcp_layer.computeCalculateFields();
+    return true;
+ }
+
+ bool UserControl::fill_udp_layer(uint16_t& src_port, uint16_t& dst_port) {
+    std::cout << "> Enter TCP source port number: ";
+    std::cin >> src_port;
+    std::cout << "> Enter TCP destination port number: ";
+    std::cin >> dst_port;
+    return true;
+ }
+
 void UserControl::send() {
+    
     list_devs();
     PcapLiveDevice* device;
     if (!select_device(&device))
         return;
     PacketSender ps{device};    
     Packet newPacket;
+    // MAC layer
     MacAddress src_mac,dst_mac;
     uint16_t eth_type;
     if (!fill_eth_layer(device, src_mac,dst_mac, eth_type))
@@ -256,9 +268,12 @@ void UserControl::send() {
     auto eth_layer = EthLayer{src_mac,dst_mac, eth_type};
     eth_layer.computeCalculateFields();
     newPacket.addLayer(&eth_layer);
+    bool more_layers = true;
+    // IP layer
     std::cout << "> Add IP layer [4/6/n]? ";
     char ip_l;
     std::cin >> ip_l;
+
     if (ip_l == '4') {
         IPv4Address src_ip;
         IPv4Address dst_ip;
@@ -275,6 +290,26 @@ void UserControl::send() {
         ip_layer.computeCalculateFields();
         newPacket.addLayer(&ip_layer);
     }
+    else more_layers = false;
+    // UDP/TCP layer
+    std::string temp = "";
+    if (more_layers) {
+        std::cout << "> Add TCP/UDP layer [tcp/udp/n]";
+        std::cin >> temp;
+    }
+    if (temp == "tcp" && more_layers) {
+        TcpLayer tcp_layer;
+        fill_tcp_layer(tcp_layer);
+        newPacket.addLayer(&tcp_layer);
+    }
+    else if (temp == "udp" && more_layers) {
+        uint16_t src_port;
+        uint16_t dst_port;
+        fill_udp_layer(src_port, dst_port);
+        UdpLayer udp_layer {src_port, dst_port};
+        udp_layer.computeCalculateFields();
+        newPacket.addLayer(&udp_layer);
+    }
 
     std::cout << "> How many packets to send?: ";
     unsigned int packet_count = 1;
@@ -289,6 +324,7 @@ void UserControl::send() {
 }
 
 void UserControl::save_packet_file(const std::string& filename, const Packet& packet) {
+    std::cout << "* This feature is under construction *";
     ofstream ofs;
     ofs.open(filename);
     if (ofs.good()) {
@@ -300,7 +336,18 @@ void UserControl::save_packet_file(const std::string& filename, const Packet& pa
         std::cout << "Error with file " << filename << std::endl;
 }
 
-Packet UserControl::load_packet_file(const std::string& filename) {
-    Packet p;
-    return p;
+void UserControl::print_stats() {
+    net_scanner_.print_stats();
+};
+
+void UserControl::save_stats() {
+    std::cout << "> Enter file name: ";
+    std::string filename;
+    std::cin >> filename;
+    std::ofstream of;
+    of.open(filename);
+    if (of.is_open()){
+        net_scanner_.print_stats(of);
+        of.close();
+    }
 }

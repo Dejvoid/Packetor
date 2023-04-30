@@ -3,6 +3,7 @@
 #include <string>
 #include <PcapLiveDeviceList.h>
 #include <PcapFileDevice.h>
+#include <IPv6Layer.h>
 
 #include "net_scanner.hpp"
 #include "packet_sender.hpp"
@@ -156,6 +157,36 @@ bool UserControl::read_mac(MacAddress& mac, std::istream& is) {
     return true;
 }
 
+bool UserControl::read_ip4(IPv4Address& ip, std::istream& is) {
+    std::string ip_str;
+    std::cin >> ip_str;
+    if (ip_str == "none") {
+        ip = IPv4Address::Zero;
+        return true;
+    }
+    ip = IPv4Address{ip_str};
+    if (!ip.isValid()){ 
+        std::cout << "IPv4: " << ip_str << " is invalid. Returning." << std::endl;
+        return false;
+    }
+    return true;
+}
+
+bool UserControl::read_ip6(IPv6Address& ip, std::istream& is) {
+    std::string ip_str;
+    std::cin >> ip_str;
+    if (ip_str == "none") {
+        ip = IPv6Address::Zero;
+        return true;
+    }
+    ip = IPv6Address{ip_str};
+    if (!ip.isValid()){ 
+        std::cout << "IPv6: " << ip_str << " is invalid. Returning." << std::endl;
+        return false;
+    }
+    return true;
+}
+
 void UserControl::send() {
     list_devs();
     std::cout << "> Select device: ";
@@ -167,6 +198,9 @@ void UserControl::send() {
     }
     auto device = dev_list_[dev_index];
     PacketSender ps{device};
+
+
+    
     MacAddress src_mac;
     MacAddress dst_mac;
     std::cout << "> Enter source MAC ('none' if use interface MAC): ";
@@ -189,25 +223,55 @@ void UserControl::send() {
     uint16_t eth_type;
     std::cin >> hex >>eth_type;
     EthLayer layer{src_mac,dst_mac, eth_type};
+    layer.computeCalculateFields();
     newPacket.addLayer(&layer);
-
-    if (device->open()) {
-        // std::cout << "Attempting to send packet" << std::endl;
-        for (;packet_count !=0; --packet_count)
-            device->sendPacket(&newPacket);
-        std::cout << "Packets sent " << src_mac << " " << dst_mac << std::endl;
-        save_packet_file("test_packet", newPacket);
+    std::cout << "> Add IP layer [4/6/n]? ";
+    char ip_l;
+    std::cin >> ip_l;
+    if (ip_l == '4') {
+        IPv4Address src_ip;
+        std::cout << "> Enter source address: ";
+        if(!read_ip4(src_ip))
+            return;
+        IPv4Address dst_ip;
+        std::cout << "> Enter destination address: ";
+        if(!read_ip4(dst_ip))
+            return;
+        IPv4Layer ip_layer{src_ip, dst_ip};
+        ip_layer.computeCalculateFields();
+        newPacket.addLayer(&ip_layer);
     }
-    else 
-        std::cout << "ERROR" << std::endl;
+    else if (ip_l == '6') {
+        IPv6Address src_ip;
+        std::cout << "> Enter source address: ";
+        if(!read_ip6(src_ip))
+            return;
+        IPv6Address dst_ip;
+        std::cout << "> Enter destination address: ";
+        if(!read_ip6(dst_ip))
+            return;
+        IPv6Layer ip_layer{src_ip, dst_ip};
+        ip_layer.computeCalculateFields();
+        newPacket.addLayer(&ip_layer);
+    }
+
+
+    ps.send_packet(&newPacket, packet_count);
+    std::cout << "> Save packet template [y/n]? ";
+    char save;
+    std::cin >> save;
+    if (save == 'y') {
+        save_packet_file("preset_packet", newPacket);
+    }
 }
 
 void UserControl::save_packet_file(const std::string& filename, const Packet& packet) {
     ofstream ofs;
     ofs.open(filename);
-    if (ofs.is_open()) {
+    if (ofs.good()) {
         ofs << packet;
         ofs.close();
+        std::cout << "Saved" << std::endl;
     }
     else 
         std::cout << "Error with file " << filename << std::endl;

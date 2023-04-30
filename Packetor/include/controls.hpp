@@ -35,6 +35,8 @@ class UserControl {
     Packet load_packet_file(const std::string& file);
     private:
     bool read_mac(MacAddress& mac, std::istream& is = std::cin);
+    bool read_ip4 (IPv4Address& ip, std::istream& is = std::cin);
+    bool read_ip6 (IPv6Address& ip, std::istream& is = std::cin);
 };
 
 #endif

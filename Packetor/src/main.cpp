@@ -9,20 +9,20 @@
 #include "arguments.hpp"
 #include "controls.hpp"
 
-static bool onPacketArrivesBlockingMode(pcpp::RawPacket* packet, pcpp::PcapLiveDevice* dev, void* cookie)
-{
-    // extract the stats object form the cookie
-    Stats* stats = (Stats*)cookie;
-
-    // parsed the raw packet
-    pcpp::Packet parsedPacket(packet);
-
-    // collect stats from packet
-    stats->consumePacket(parsedPacket);
-
-    // return false means we don't want to stop capturing after this callback
-    return false;
-}
+//static bool onPacketArrivesBlockingMode(pcpp::RawPacket* packet, pcpp::PcapLiveDevice* dev, void* cookie)
+//{
+//    // extract the stats object form the cookie
+//    Stats* stats = (Stats*)cookie;
+//
+//    // parsed the raw packet
+//    pcpp::Packet parsedPacket(packet);
+//
+//    // collect stats from packet
+//    stats->consumePacket(parsedPacket);
+//
+//    // return false means we don't want to stop capturing after this callback
+//    return false;
+//}
 
 int main (int argc, char** argv){ 
     if (argc <= 1) {
@@ -37,15 +37,15 @@ int main (int argc, char** argv){
 
     } 
 
-    auto device = PcapLiveDeviceList::getInstance().getPcapLiveDevicesList()[1]; 
-    PacketSender ps{device};
-    //ps.send_packet();
-    ps.wifi_deauth();
-
-    if (device->open()) {
-        Stats stats;
-        device->startCaptureBlockingMode(onPacketArrivesBlockingMode, &stats, 10);
-        std::cout << "Results:" << std::endl;
-        //stats.printToConsole();
-    }
+    //auto device = PcapLiveDeviceList::getInstance().getPcapLiveDevicesList()[1]; 
+    //PacketSender ps{device};
+    ////ps.send_packet();
+    //ps.wifi_deauth();
+//
+    //if (device->open()) {
+    //    Stats stats;
+    //    device->startCaptureBlockingMode(onPacketArrivesBlockingMode, &stats, 10);
+    //    std::cout << "Results:" << std::endl;
+    //    //stats.printToConsole();
+    //}
 } 

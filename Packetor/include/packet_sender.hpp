@@ -8,21 +8,21 @@ class PacketSender {
     PcapLiveDevice* device_;
     public:
     PacketSender(PcapLiveDevice* device) : device_(device) {};
-    void send_packet(const MacAddress& src_mac, const MacAddress& dest_mac, const IPv4Address& src_ip, const IPv4Address& dest_ip) {
-        pcpp::EthLayer newEthernetLayer(src_mac, dest_mac);
-        pcpp::IPv4Layer newIPLayer(src_ip, dest_ip);
-        newIPLayer.getIPv4Header()->ipId = 10;
-        newIPLayer.getIPv4Header()->timeToLive = 64;
-        pcpp::UdpLayer newUdpLayer(12345, 53);
-        pcpp::Packet newPacket(100);
-        newPacket.addLayer(&newEthernetLayer);
-        newPacket.addLayer(&newIPLayer);
-        newPacket.addLayer(&newUdpLayer);
-        newPacket.computeCalculateFields();
+    void send_packet(Packet* packet, int count = 1) {
+        //pcpp::EthLayer newEthernetLayer(src_mac, dest_mac);
+        //pcpp::IPv4Layer newIPLayer(src_ip, dest_ip);
+        //newIPLayer.getIPv4Header()->ipId = 10;
+        //newIPLayer.getIPv4Header()->timeToLive = 64;
+        //pcpp::UdpLayer newUdpLayer(12345, 53);
+        //pcpp::Packet newPacket(100);
+        //newPacket.addLayer(&newEthernetLayer);
+        //newPacket.addLayer(&newIPLayer);
+        //newPacket.addLayer(&newUdpLayer);
+        //newPacket.computeCalculateFields();
         if (device_->open()) {
-            std::cout << "Attempting to send packet" << std::endl;
-            device_->sendPacket(&newPacket);
-            std::cout << "Packet sent" << std::endl;
+            for (;count !=0; --count)
+                device_->sendPacket(packet);
+            std::cout << "Packets sent!" << std::endl;
         }
         else 
             std::cout << "ERROR" << std::endl;

@@ -18,8 +18,7 @@ struct hash<MacAddress> {
 };
 }
 
-struct PacketStats
-{
+struct Stats {
     int eth_count = 0;
     int ipv4_count = 0;
     int ipv6_count = 0;
@@ -28,6 +27,8 @@ struct PacketStats
     int dns_count = 0;
     int http_count = 0;
     int ssl_count = 0;
+
+
 
     void consumePacket(const Packet& packet);
 
@@ -45,6 +46,9 @@ class NetScanner {
     void scan_mac_passive(PcapLiveDevice* device, int wait_time = 5);
     void scan_ipv4_passive(PcapLiveDevice* device, int wait_time = 5);
     void scan_ipv6_passive(PcapLiveDevice* device, int wait_time = 5);
+    const set<IPv4Address>& get_ipv4() const {return ipv4_devs_;};
+    const set<IPv6Address>& get_ipv6() const {return ipv6_devs_;};
+    const unordered_set<MacAddress>& get_mac() const {return mac_devs_;};
 };
 
 #endif 

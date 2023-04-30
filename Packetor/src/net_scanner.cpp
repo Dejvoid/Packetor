@@ -42,7 +42,7 @@ static bool on_packet_arrival_ipv6(pcpp::RawPacket* packet, pcpp::PcapLiveDevice
     return false;
 }
 
-void PacketStats::consumePacket(const Packet& packet){
+void Stats::consumePacket(const Packet& packet){
         if (packet.isPacketOfType(pcpp::Ethernet))
             eth_count++;
         if (packet.isPacketOfType(pcpp::IPv4))

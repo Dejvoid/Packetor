@@ -17,16 +17,22 @@ void UserControl::main_loop() {
         std::cin >> cmd;
         if (cmd == "help") {
             help();
-        } else if (cmd == "list") {
+        } else if (cmd == DEV_LIST) {
             list_devs();
-        } else if (cmd == "mac_scan") {
+        } else if (cmd == MAC_SCAN) {
             mac_scan();
-        } else if (cmd == "ip_scan") {
+        } else if (cmd == IP_SCAN) {
             ip_scan();
-        } else if (cmd == "send") {
+        } else if (cmd == SEND) {
             send();
+        } else if (cmd == MAC_LIST) {
+            list_mac();
+        } else if (cmd == IP4_LIST) {
+            list_ipv4();
+        } else if (cmd == IP6_LIST) {
+            list_ipv6();
         }
-        else if (cmd == "exit") {
+        else if (cmd == EXIT) {
             return;
         } else {
             std::cout << "Unknown command!" << std::endl;
@@ -40,11 +46,14 @@ void UserControl::help() {
     //std::cout << "In interactive mode: " << std::endl;
 
     std::cout << "'help'" << " to show this help" << std::endl;
-    std::cout << "'list'" << " to list interfaces" << std::endl;
-    std::cout << "'mac_scan'" << " to scan MAC addresses" << std::endl;
-    std::cout << "'ip_scan'" << " to scan IP addresses" << std::endl;
-    std::cout << "'send'" << " to send custom packets" << std::endl;
-    std::cout << "'exit'" << " to exit" << std::endl;
+    std::cout << "'" << DEV_LIST << "'" << " to list interfaces" << std::endl;
+    std::cout << "'" << MAC_LIST << "'" << " to list discovered MAC addresses" << std::endl;
+    std::cout << "'" << MAC_SCAN << "'" << " to scan MAC addresses" << std::endl;
+    std::cout << "'" << IP_SCAN << "'" << " to scan IP addresses" << std::endl;
+    std::cout << "'" << IP4_LIST << "'" << " to list IPv4 addresses" << std::endl;
+    std::cout << "'" << IP6_LIST << "'" << " to list IPv6 addresses" << std::endl;
+    std::cout << "'" << SEND <<"'" << " to send custom packets" << std::endl;
+    std::cout << "'" << EXIT << "'" << " to exit" << std::endl;
 }
 
 void UserControl::list_devs() {
@@ -59,6 +68,36 @@ void UserControl::list_devs() {
             std::cout << std::endl;
         //}
         ++i;
+    }
+}
+
+void UserControl::list_mac() {
+    auto macs = net_scanner_.get_mac();
+    std::cout << "Discovered MAC addresses: " << std::endl;
+    int i = 0;
+    for (auto it = macs.begin(); it != macs.end(); ++it) {
+        auto m = *it;
+        std::cout << "[" << i++ << "] " << m << std::endl;
+    }
+}
+
+void UserControl::list_ipv4() {
+    auto ips = net_scanner_.get_ipv4();
+    std::cout << "Discovered IPv4 addresses: " << std::endl;
+    int i = 0;
+    for (auto it = ips.begin(); it != ips.end(); ++it) {
+        auto ip = *it;
+        std::cout << "[" << i++ << "] " << ip << std::endl;
+    }
+}
+
+void UserControl::list_ipv6() {
+    auto ips = net_scanner_.get_ipv6();
+    std::cout << "Discovered IPv6 addresses: " << std::endl;
+    int i = 0;
+    for (auto it = ips.begin(); it != ips.end(); ++it) {
+        auto ip = *it;
+        std::cout << "[" << i++ << "] " << ip << std::endl;
     }
 }
 
@@ -157,6 +196,7 @@ void UserControl::send() {
         for (;packet_count !=0; --packet_count)
             device->sendPacket(&newPacket);
         std::cout << "Packets sent " << src_mac << " " << dst_mac << std::endl;
+        save_packet_file("test_packet", newPacket);
     }
     else 
         std::cout << "ERROR" << std::endl;

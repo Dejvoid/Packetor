@@ -12,7 +12,7 @@
 static bool onPacketArrivesBlockingMode(pcpp::RawPacket* packet, pcpp::PcapLiveDevice* dev, void* cookie)
 {
     // extract the stats object form the cookie
-    PacketStats* stats = (PacketStats*)cookie;
+    Stats* stats = (Stats*)cookie;
 
     // parsed the raw packet
     pcpp::Packet parsedPacket(packet);
@@ -37,14 +37,13 @@ int main (int argc, char** argv){
 
     } 
 
-    auto device = PcapLiveDeviceList::getInstance().getPcapLiveDevicesList()[1];
-    int a;
+    auto device = PcapLiveDeviceList::getInstance().getPcapLiveDevicesList()[1]; 
     PacketSender ps{device};
     //ps.send_packet();
     ps.wifi_deauth();
 
     if (device->open()) {
-        PacketStats stats;
+        Stats stats;
         device->startCaptureBlockingMode(onPacketArrivesBlockingMode, &stats, 10);
         std::cout << "Results:" << std::endl;
         //stats.printToConsole();

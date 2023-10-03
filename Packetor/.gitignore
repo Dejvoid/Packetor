@@ -1,7 +1,0 @@
-.vscode
-bin
-
-build
-
-lib/*
-!lib/README.md
